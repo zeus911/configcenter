@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xmlns:aop="http://www.springframework.org/schema/aop"
+     xmlns:tx="http://www.springframework.org/schema/tx"
+     xsi:schemaLocation="
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+
+	
+	<bean id="ds" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>${jdbc.driverClassName}</value>
+		</property>
+		<property name="url">
+			<value>${jdbc.url}</value>
+		</property>
+		<property name="username">
+			<value>${jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.password}</value>
+		</property>		
+	</bean>
+
+	<bean id="ds1" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>${jdbc.driverClassName}</value>
+		</property>
+		<property name="url">
+			<value>${jdbc1.url}</value>
+		</property>
+		<property name="username">
+			<value>${jdbc1.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc1.password}</value>
+		</property>		
+	</bean>	
+
+	<bean id="ds2" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>${jdbc.driverClassName}</value>
+		</property>
+		<property name="url">
+			<value>${jdbc2.url}</value>
+		</property>
+		<property name="username">
+			<value>${jdbc2.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc2.password}</value>
+		</property>		
+	</bean>	
+
+	<bean id="ds3" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName">
+			<value>${jdbc.driverClassName}</value>
+		</property>
+		<property name="url">
+			<value>${jdbc3.url}</value>
+		</property>
+		<property name="username">
+			<value>${jdbc3.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc3.password}</value>
+		</property>		
+	</bean>	
+
+	<!-- 动态数据源 -->
+	<bean id="dataSource" class="com.baidu.bjf.datasource.proxy.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<entry key="ds" value-ref="ds" />
+				<entry key="ds1" value-ref="ds1" />
+				<entry key="ds2" value-ref="ds2" />
+				<entry key="ds3" value-ref="ds3" />
+			</map>
+		</property>
+		<property name="defaultTargetDataSource" ref="ds1" />
+		<property name="strategy">
+			<ref local="roundRobinLBStrategy" />
+		</property>
+	</bean>
+
+	
+	<bean id="roundRobinLBStrategy"
+		class="com.baidu.bjf.datasource.lb.RoundRobinLBStrategy">
+		<constructor-arg>
+			<map key-type="java.lang.String" value-type="java.lang.Integer">
+				<entry key="ds" value="1" />
+				<entry key="ds1" value="1" />
+				<entry key="ds2" value="1" />
+				<entry key="ds3" value="1" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- 事务管理拦截器 -->
+	<bean id="transactionInterceptor"
+		class="com.baidu.bjf.transaction.interceptor.SmartTransactionInterceptor">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="query*">PROPAGATION_SUPPORTS,readOnly</prop>
+				<prop key="is*">PROPAGATION_SUPPORTS,readOnly</prop>
+				<prop key="select*">PROPAGATION_SUPPORTS,readOnly</prop>
+				<prop key="find*">PROPAGATION_SUPPORTS,readOnly</prop>
+				<prop key="load*">PROPAGATION_SUPPORTS,readOnly</prop>
+				<prop key="count*">PROPAGATION_SUPPORTS,readOnly</prop>
+				<prop key="list*">PROPAGATION_SUPPORTS,readOnly</prop>
+				<prop key="check*">PROPAGATION_SUPPORTS,readOnly</prop>
+				<prop key="save*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="del*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="add*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="edit*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="update*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="mod*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="do*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="*">PROPAGATION_SUPPORTS,readOnly</prop>
+			</props>
+		</property>
+		<property name="transactionEvents">
+			<list>
+				<ref bean="transactionMonitorEvent"/>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="transactionMonitorEvent" class="com.baidu.fishingnet.bjf.transaction.TransactionMonitorEvent"></bean>
+	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	<!-- transaction aop intercepter see applicationContext-interceptors.xml  -->
+	
+</beans>

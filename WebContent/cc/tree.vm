@@ -1,0 +1,69 @@
+#parse("/cc/constants.vm")
+<div class="left-tree">
+        <div id="dtreeDiv" class="dtree">
+
+            <!--p><a href="javascript: d.openAll();">open all</a> | <a href="javascript: d.closeAll();">close all</a></p-->
+
+            <script type="text/javascript">
+                    <!--
+
+                    d = new dTree('d');
+                    //图片初始化
+                    d.icon = {
+		root				: '${webResourcePath}/images/img/base.gif',
+		folder			: '${webResourcePath}/images/img/folder.gif',
+		folderOpen	: '${webResourcePath}/images/img/folderopen.gif',
+		node				: '${webResourcePath}/images/img/page.gif',
+		empty				: '${webResourcePath}/images/img/empty.gif',
+		line				: '${webResourcePath}/images/img/line.gif',
+		join				: '${webResourcePath}/images/img/join.gif',
+		joinBottom	: '${webResourcePath}/images/img/joinbottom.gif',
+		plus				: '${webResourcePath}/images/img/plus.gif',
+		plusBottom	: '${webResourcePath}/images/img/plusbottom.gif',
+		minus				: '${webResourcePath}/images/img/minus.gif',
+		minusBottom	: '${webResourcePath}/images/img/minusbottom.gif',
+		nlPlus			: '${webResourcePath}/images/img/nolines_plus.gif',
+		nlMinus			: '${webResourcePath}/images/img/nolines_minus.gif'
+	};
+	
+//dTree.prototype.add = function(id, pid, name, url, title, target, icon, iconOpen, open)
+					
+					
+			jQuery.ajax({ 
+					type: "post", 
+					url: "/tree/listProject.action", 
+					dataType: "json", 
+					success: function (res) { 		
+							var treeList = res.data.treeList;
+							for(var i=0;i<treeList.length;i++){
+								var node=treeList[i];
+								d.add(node.id,node.pid,node.name,node.url,'','','${webResourcePath}/images/img/folder.gif'); 				
+							}
+							jQuery('#dtreeDiv')[0].innerHTML = d;  //.html(d);
+							d.closeAll();
+							jQuery("a[ id ^='sd']").each(function(){
+								var _link = jQuery(this).attr('href');
+								if(_link.indexOf("?")==-1){
+									_link += '?nid='+ jQuery(this).attr('id').replace(/sd/g,'');
+								}else{
+									_link += '&nid='+ jQuery(this).attr('id').replace(/sd/g,'');
+								}
+								jQuery(this).attr('href', _link);
+							});
+							var nid = "$!request.getParameter('nid')";
+							if(nid!=""){
+								d.openTo(nid,true,false);
+							}else{}				
+					}
+			});
+					
+                    document.write(d);
+                    //默认打开树
+					//d.openAll();
+
+					
+                    //-->
+            </script>
+
+        </div>
+    </div>

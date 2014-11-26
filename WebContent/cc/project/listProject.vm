@@ -1,0 +1,391 @@
+#parse("/cc/constants.vm")
+#parse("/cc/header.vm")
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<div class="layout-content">
+    #parse("/cc/tree.vm")
+    <div class="right-tree pd0x10">
+  <div class="pd10x20" id="userPei">
+    <div class="page-title mb20"><i class="i_icon"></i> 用户列表<a href='#' id="addUser" class="btn btn-primary fr">添加用户</a></div>
+    <div class="panel">
+      <div class="panel-header">
+      <div class="panel mt10 mb20" id="userInfo">
+      </div>
+    </div>
+  </div>
+  </div>
+         <div class="pd10x20">
+            <!-- <div class="page-title mb20"><i class="i_icon"></i> 工程列表<a href='/project/editProject.action' class="btn btn-primary fr">添加工程</a></div> -->
+            <div class="page-title mb20"><i class="i_icon"></i> 工程列表<a href='#' id="addProject" class="btn btn-primary fr">添加工程</a></div>
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel mt10 mb20">
+                        <table class="table table_bordered">
+                            <thead>
+                            <tr>
+                                <th width="90">工程ID</th>
+                                <th>工程名</th>
+                                <th width="60">&nbsp;</th>
+                                <th width="60">&nbsp;</th>
+                                <th width="60">&nbsp;</th>
+##                                <th width="60" style="padding-left:15px;">&nbsp;</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                #foreach($project in $data.projectList)
+                                <tr>
+                                    <td>$project.id</td>
+                                    <td>$!utils.escapeInH($project.name)</td>
+                                    <td class="i-operate"><a href="#" onclick="editProject('$project.id', '$!utils.escapeInH($project.name)', '$sysUtils.encryptAuthCheck($request,$project.id)', '$project.memo')">编辑</a></td>
+                                    <td class="i-operate"><a href="#" onclick="deletProject('$project.id','$!utils.escapeInH($project.name)', '$sysUtils.encryptAuthCheck($request,$project.id)')">删除</a></td>
+                                    <td class="i-operate"><a href="/env/listEnv.action?reqParam.projectId=$project.id&authCheck=$sysUtils.encryptAuthCheck($request,$project.id)">管理环境</a></td>
+##                                    <td class="i-operate"><a href="/access/accessSettingList.action?reqParam.projectId=$project.id&authCheck=$sysUtils.encryptAuthCheck($request,$project.id)">管理权限</a></td>
+                                </tr>
+                                #end
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td class="i-operate"></td>
+                                <td class="i-operate"></td>
+                                <td class="i-operate"></td>
+##                              <td class="i-operate"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        #parse("/cc/paging.vm")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="dialog-confirm"  style="display: none">
+     <div class="pd10x20">
+            <div class="page-title mb20"><i class="i_icon"></i>  #if(!$data.user.id) 新增 #else 编辑 #end 用户信息 <span id='closeX'>X</span></div>
+            <div class="form pd10">
+                <iframe src="" name="hideIframe" id="backHeader" style="display:none;"></iframe>
+                <form id="form0" method="post" action="/user/saveUser.action" target="hideIframe">
+                    <!-- <input type="hidden" name="reqParam.user.id" value="$!data.user.id"/> -->
+                    <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                        <tr>
+                            <td width="20%" align="right"><b class="requier">*</b>用户名：</td>
+                            <td width="80%"  align="left"><input type="text" name="reqParam.user.name" value="$!utils.escapeInH($!data.user.name)" id="vname" class="input-large" size="50">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="right">登录密码：</td>
+                            <td align="left"><input id="vpassword" type="password" name="reqParam.user.password" value="$!data.user.password"/></td>
+                        </tr>
+                        <tr>
+                            <td align="right">API密码：</td>
+                            <td align="left"><input id="vApiPassword" type="password" name="reqParam.user.apiPassword" value="$!data.user.apiPassword"/></td>
+                        </tr>
+                        <tr>
+                            <td align="right">&nbsp;</td>
+                            <td align="left"><a href="#" class="btn btn-primary btn-large" id="submitT" type="submit">确认</a>  <a class="btn  btn-large" id="close">取消</a> </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- 工程列表弹窗 -->
+    <div id="dialog-project"  style="display: none">
+     <div class="pd10x20">
+    <div class="page-title mb20"><i class="i_icon"></i>  #if(!$data.project.id) 新增 #else 编辑 #end 工程 <span id='closeProject'>X</span></div>
+        <div class="form pd10">
+        <form id="formProject" method="post" action="/project/saveProject.action?authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)" >
+        <!-- <input type="hidden" name="reqParam.project.id" value="$!data.project.id"/> -->
+            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td width="20%" align="right"><b class="requier">*</b>工程名：</td>
+                    <td width="80%"  align="left"><input type="text" name="reqParam.project.name" value="$!utils.escapeInH($!data.project.name)" id="ename" class="input-large" size="50">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">简介：</td>
+                    <td align="left"><textarea name="reqParam.project.memo" class="textarea" id="ememo">$!utils.escapeInH($!data.project.memo)</textarea></td>
+                </tr>          
+                <tr>
+                  <td align="right">&nbsp;</td>
+                  <td align="left"><a class="btn btn-primary btn-large" id="submitProject">确认</a>  <a class="btn  btn-large" id="closeQ">取消</a> </td>
+                </tr>
+              </table>
+              </form>
+         </div>
+    </div>
+    </div>
+    <script type="text/javascript">
+        jQuery(function() {
+    var closeModule = function() {
+        var wnd = $(window),
+            doc = $(document);
+        if (wnd.height() > doc.height()) { //当高度少于一屏
+            wHeight = wnd.height();
+        } else { //当高度大于一屏
+            wHeight = doc.height();
+        }
+        $("body").append("<div ID='MaskID'></div>");
+        $("body").find("#MaskID").width(wnd.width()).height(wHeight)
+            .css({
+                position: "absolute",
+                top: "0px",
+                left: "0px",
+                background: "#ccc",
+                filter: "Alpha(opacity=90);",
+                opacity: "0.5",
+                zIndex: "10"
+            });
+    }
+    $('#addUser').click(function() {
+        editUser();
+    });
+    deleteId = function(id, name) {
+
+        if(confirm('确认删除' + name + '用户吗？')){
+            jQuery.ajax({
+                url: '/user/delUser.action?reqParam.id=' + id,
+                type: 'post',
+                success: function(data) {
+                    jQuery('#userInfo').html(data);
+                }
+            })
+        }
+        return false;
+    }
+    //修改用户
+    window.editU = function(id, name, password, apiPassword) {
+        console.log(id);
+        if ($('#MaskID')) {
+            closeModule();
+            $("#dialog-confirm").dialog({
+                autoOpen: true,
+                module: true,
+                height: 350,
+                width: 600,
+                overlay: {
+                    opacity: 0.5,
+                    background: "black",
+                    overflow: 'auto'
+                },
+            });
+            $('#vname').val(name);
+            $('#vpassword').val(password);
+            $('#vApiPassword').val(apiPassword);
+        };
+        $('.ui-helper-clearfix').css('display', 'none');
+        $('#close').click(function() {
+            $('#dialog-confirm').dialog('close');
+            $('#MaskID').remove();
+        });
+        $('#closeX').click(function() {
+            $('#dialog-confirm').dialog('close');
+            $('#MaskID').remove();
+        });
+        $('#submitT').one('click', function() {
+            if(event.target.type!="submit"){
+                $(this).find(":submit").click(function(){
+                    event.stopPropagation();
+                })
+            }
+            if($('#vname').val() == ''){
+                alert('请先写用户名!');
+                return false;
+            }else{
+                var parms = $('#form0').serialize();
+                jQuery.ajax({
+                    url: '${contextPath}/user/saveUser.action?reqParam.user.id=' + id,
+                    data: parms,
+                    type: 'post',
+                    success: function(data) {
+                        $('#dialog-confirm').dialog('close');
+                        $('#MaskID').remove();
+                        jQuery.ajax({
+                            url: '/user/listUser.action',
+                            success: function(data) {
+                                jQuery('#userInfo').html(data);
+                            }
+                        });
+                    }
+                })
+            }
+        });
+    }
+    //添加用户
+    window.editUser = function() {
+        if ($('#MaskID')) {
+            closeModule();
+            $("#dialog-confirm").dialog({
+                autoOpen: true,
+                module: true,
+                height: 350,
+                width: 600,
+                overlay: {
+                    opacity: 0.5,
+                    background: "black",
+                    overflow: 'auto'
+                },
+            });
+            $('#vname').val('');
+            $('#vpassword').val('');
+            $('#vApiPassword').val('');
+            $('.ui-helper-clearfix').css('display', 'none');
+            $('#close').click(function() {
+                $('#dialog-confirm').dialog('close');
+                $('#MaskID').remove();
+            });
+            $('#closeX').click(function() {
+                $('#dialog-confirm').dialog('close');
+                $('#MaskID').remove();
+            });
+        }
+        $('.ui-helper-clearfix').css('display', 'none');
+        $('#close').click(function() {
+            $('#dialog-confirm').dialog('close');
+            $('#MaskID').remove();
+        });
+        $('#closeX').click(function() {
+            $('#dialog-confirm').dialog('close');
+            $('#MaskID').remove();
+        });
+        $('#submitT').one('click', function() {
+            if($('#vname').val() == ''){
+                alert('请先写用户名!');
+                return false;
+            }else{
+                var parms = $('#form0').serialize();
+                jQuery.ajax({
+                    url: '/user/saveUser.action',
+                    data: parms,
+                    type: 'post',
+                    success: function(data) {
+                        $('#dialog-confirm').dialog('close');
+                        $('#MaskID').remove();
+                        jQuery.ajax({
+                            url: '/user/listUser.action',
+                            success: function(data) {
+                                jQuery('#userInfo').html(data);
+                            }
+                        })
+                    }
+                })
+            }
+        })
+    };
+    //添加project
+    $('#addProject').one('click', function() {
+        closeModule();
+        $("#dialog-project").dialog({
+            autoOpen: true,
+            module: true,
+            height: 430,
+            width: 700,
+            overlay: {
+                opacity: 0.5,
+                background: "black",
+                overflow: 'auto'
+            },
+        });
+        $('#ename').val('');
+        $('#ememo').val('');
+        $('.ui-helper-clearfix').css('display', 'none');
+        $('#closeQ').click(function() {
+            $('#dialog-project').dialog('close');
+            $('#MaskID').remove();
+        });
+        $('#closeProject').click(function() {
+            $('#dialog-project').dialog('close');
+            $('#MaskID').remove();
+        });
+        //添加project ajax
+        $('#submitProject').click(function() {
+            if($('#ename').val() == ''){
+                alert('请填写工程名称！');
+            }else{
+                var parms = $('#formProject').serialize();
+                jQuery.ajax({
+                    url: '/project/saveProject.action',
+                    data: parms,
+                    type: 'post',
+                    success: function(data) {
+                        $('#dialog-project').dialog('close');
+                        $('#MaskID').remove();
+                        location.href = '/project/listProject.action';
+                    }
+                })
+            }
+        })
+    });
+    //修改project
+    window.editProject = function(id, name, jps, memo) {
+        $('#ememo').val(memo);
+        closeModule();
+        $("#dialog-project").dialog({
+            autoOpen: true,
+            module: true,
+            height: 430,
+            width: 700,
+            overlay: {
+                opacity: 0.5,
+                background: "black",
+                overflow: 'auto'
+            },
+        });
+        $('.ui-helper-clearfix').css('display', 'none');
+        $('#closeQ').click(function() {
+            $('#dialog-project').dialog('close');
+            $('#MaskID').remove();
+        });
+        $('#closeProject').click(function() {
+            $('#dialog-project').dialog('close');
+            $('#MaskID').remove();
+        });
+        $('#ename').val(name);
+        if (jQuery.trim(jQuery('#ename').val()) == '') {
+            alert('请填写工程名称！');
+            return false;
+        }
+        $('#submitProject').click(function() {
+             if($('#ename').val() == ''){
+                alert('请填写工程名称！');
+            }else{
+                var parms = $('#formProject').serialize();
+                jQuery.ajax({
+                    url: '/project/saveProject.action?reqParam.project.id=' + id + '&authCheck=' + jps,
+                    data: parms,
+                    type: 'post',
+                    success: function(data){
+                        window.location.href = '/project/listProject.action';
+                    }
+                });
+            }
+        })
+    };
+    //删除deleteProject
+    window.deletProject = function(id, name, jps) {
+        if(confirm('确认删除' + name + '工程吗？')){
+        jQuery.ajax({
+            url: '/project/delProject.action?reqParam.projectIds[0]=' + id + '&authCheck=' + jps,
+            success: function(data) {
+                // alert('删除成功');
+                window.location.href = '/project/listProject.action';
+            }
+        })
+    }   else  false;
+        
+    };
+    var uname = jQuery.cookie('rcc_name');
+    if (uname != 'admin') {
+        jQuery('#userPei').hide();
+    } else {
+        jQuery.ajax({
+            url: '/user/listUser.action',
+            success: function(data) {
+                jQuery('#userInfo').html(data);
+            }
+        })
+        jQuery('#userPei').show();
+    }
+});
+    </script>
+#parse("/cc/footer.vm")
+</div>

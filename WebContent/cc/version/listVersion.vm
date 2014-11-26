@@ -1,0 +1,221 @@
+#parse("/cc/constants.vm")
+#parse("/cc/header.vm")
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<div class="layout-content">
+    #parse("/cc/tree.vm")
+    <div class="right-tree pd0x10">
+        
+        <div class="pd10x20">
+    <div class="page-title mb20"><i class="i_icon"></i> $!utils.escapeInH(${data.project.name})-$!utils.escapeInH(${data.env.name})->版本列表<!-- <a class="btn btn-primary fr" href="/version/editVersion.action?reqParam.envId=$data.env.id&reqParam.projectId=$data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)">添加版本</a> -->
+    <a class="btn btn-primary fr" href="#" id="addVersion">添加版本</a>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+      <div class="panel mt10 mb20">
+        <table class="table table_bordered">
+          <thead>
+            <tr>
+              <th width="90">ID</th>
+              <th>名称</th>
+              <th width="120">&nbsp;</th>
+              <th width="60">&nbsp;</th>
+              <th width="120">&nbsp;</th>
+              <th width="60" >&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody>
+          #foreach($v in $data.versionList)
+		        <tr>
+		            <td>$v.id</td>
+		            <td>$!utils.escapeInH($v.name)</td>
+		            <!-- <td><a href="/version/editVersion.action?reqParam.versionId=$v.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)">编辑</a></td> -->
+                <td><a href="#" onclick = "editVersion('$v.id', '$!utils.escapeInH($v.name)', '$sysUtils.encryptAuthCheck($request,$data.project.id)', '$v.memo')">编辑</a></td>
+		            <td><a href="#" onclick="return doDele('$v.id')">删除</a></td>
+		            <td><a href="/configGroup/listConfigGroup.action?reqParam.versionId=$v.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)">管理分组配置</a></td>
+		            <!-- <td><a href="/version/pushChange.action?reqParam.versionId=$v.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)">推送变更</a></td> -->
+                <td><a href="#" onclick="tuiSong('$v.id', '$sysUtils.encryptAuthCheck($request,$data.project.id)')">推送变更</a></td>
+		        </tr>
+		    #end
+            <tr>
+		        <td></td>
+		        <td></td>
+		        <td class="i-operate"></td>
+		        <td class="i-operate"></td>
+		        <td class="i-operate"></td>
+		    </tr>
+          </tbody>
+        </table>
+        #parse("/cc/paging.vm")
+      </div>
+    </div>
+  </div>
+    </div>
+    <!-- 环境dialog -->
+     <div id="dialog-confirm"  style="display: none">
+    <div class="pd10x20">
+  <div class="page-title mb20"><i class="i_icon"></i>  #if(!$data.version.id) 新增 #else 编辑 #end 版本(工程：$!utils.escapeInH($data.project.name)  环境：$!utils.escapeInH($data.env.name)) <span id='closeX'>X</span></div>
+        <div class="form pd10">
+        <form id="form0" method="post" action="/version/saveVersion.action" >
+      <!-- <input type="hidden" name="reqParam.version.id" value="$!data.version.id"/> -->
+      <input type="hidden" name="reqParam.version.projectId" value="$!data.project.id"/>
+      <input type="hidden" name="reqParam.version.environmentId" value="$!data.env.id"/>
+        <input type="hidden" id="vcsum" name="reqParam.version.checkSum" value="$!data.version.checkSum" class="input-large" size="50" readonly="true">
+        <input type="hidden" id="vccsum" name="reqParam.version.createChckSum" value="$!data.version.createChckSum" class="input-large" size="50" readonly="true">
+        <input type="hidden" id="vcsumd" name="reqParam.version.checkSumDate" value="$!dateUtils.formatDate($!data.version.checkSumDate,"yyyy-MM-dd HH:mm:ss")" class="input-large" size="50" readonly="true">
+            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td width="20%" align="right"><b class="requier">*</b>名称：</td>
+                    <td width="80%"  align="left"><input id="vname" type="text" name="reqParam.version.name" value="$!utils.escapeInH($!data.version.name)" class="input-large" size="50">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">简介：</td>
+                    <td align="left"><textarea id="vmemo" name="reqParam.version.memo" class="textarea">$!utils.escapeInH($!data.version.memo)</textarea></td>
+                </tr>
+                <tr>
+                  <td align="right">&nbsp;</td>
+                  <!-- <td align="left"><a class="btn btn-primary btn-large" onclick="return doConfirm();">确认</a>  <a class="btn  btn-large" id="closeEnv">取消</a> </td> -->
+                  <td align="left"><a class="btn btn-primary btn-large" id="submitVersion">确认</a>  <a class="btn  btn-large" id="closeEnv">取消</a> </td>
+                </tr>
+              </table>
+              </form>
+         </div>
+    </div>
+    </div>
+    <script>
+    $(function() {
+  var closeModule = function() {
+      var wnd = $(window),
+        doc = $(document);
+      if (wnd.height() > doc.height()) { //当高度少于一屏
+        wHeight = wnd.height();
+      } else { //当高度大于一屏
+        wHeight = doc.height();
+      }
+      $("body").append("<div ID='MaskID'></div>");
+      $("body").find("#MaskID").width(wnd.width()).height(wHeight)
+        .css({
+          position: "absolute",
+          top: "0px",
+          left: "0px",
+          background: "#ccc",
+          filter: "Alpha(opacity=90);",
+          opacity: "0.5",
+          zIndex: "10"
+        });
+    }
+    //添加版本
+  $('#addVersion').click(function() {
+    closeModule();
+    $("#dialog-confirm").dialog({
+      autoOpen: true,
+      module: true,
+      height: 500,
+      width: 700,
+      overlay: {
+        opacity: 0.5,
+        background: "black",
+        overflow: 'auto'
+      },
+    });
+    $('#vname').val('');
+    $('#vmemo').val('');
+    $('.ui-helper-clearfix').css('display', 'none');
+    $('#closeX').click(function() {
+      $('#dialog-confirm').dialog('close');
+      $('#MaskID').remove();
+    });
+    $('#closeEnv').click(function() {
+      $('#dialog-confirm').dialog('close');
+      $('#MaskID').remove();
+    });
+    $('#submitVersion').click(function(){
+      if($('#vname').val() == ''){
+        alert('请填写名称');
+      }else{
+        var parms = $('#form0').serialize();
+        jQuery.ajax({
+          url: '/version/saveVersion.action?authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)',
+          data: parms,
+          type: 'post',
+          success: function(data){
+            window.location.href = '/version/listVersion.action?reqParam.environmentId=$!data.env.id&reqParam.projectId=$!data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+          }
+        })
+      }
+    })
+  });
+  //修改版本
+  window.editVersion = function(id, name, jps, memo) {
+    $('#vname').val(name);
+    $('#vmemo').val(memo);
+    closeModule();
+    $("#dialog-confirm").dialog({
+      autoOpen: true,
+      module: true,
+      height: 500,
+      width: 700,
+      overlay: {
+        opacity: 0.5,
+        background: "black",
+        overflow: 'auto'
+      },
+    });
+    $('.ui-helper-clearfix').css('display', 'none');
+    $('#closeX').click(function() {
+      $('#dialog-confirm').dialog('close');
+      $('#MaskID').remove();
+    });
+    $('#closeEnv').click(function() {
+      $('#dialog-confirm').dialog('close');
+      $('#MaskID').remove();
+    });
+    $('#submitVersion').click(function(){
+      if($('#vname').val() == ''){
+        alert('请填写名称');
+      }else{
+        var parms = $('#form0').serialize();
+        jQuery.ajax({
+          url: '/version/saveVersion.action?authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)&reqParam.version.id=' +id,
+          data: parms,
+          type: 'post',
+          success: function(data){
+            window.location.href = '/version/listVersion.action?reqParam.environmentId=$!data.env.id&reqParam.projectId=$!data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+          }
+        })
+      }
+    })
+  }
+  //推送
+  window.tuiSong = function(id, jps) {
+    jQuery.ajax({
+      url: '/version/pushChange.action?reqParam.versionId=' + id + '&authCheck=' + jps,
+      success: function(data) {
+        if (status == 0) {
+          alert('推送成功！');
+        }
+      }
+    })
+  }
+});
+
+function doDele(id) {
+  if (confirm('确认删除？')) {
+    jQuery.getJSON("/version/delVersion.action", {
+        'reqParam.versionId': id,
+        'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)'
+      },
+      function(json) {
+        if (json.status != 0) {
+          alert("服务器端异常请联系管理员！！");
+        } else {
+          window.location.href = '/version/listVersion.action?reqParam.environmentId=$!data.env.id&reqParam.projectId=$!data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+        }
+      });
+  }
+  return false;
+}
+	</script>
+</div>
+#parse("/cc/footer.vm")
+</div>

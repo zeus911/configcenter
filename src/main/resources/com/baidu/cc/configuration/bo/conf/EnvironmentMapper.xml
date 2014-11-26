@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.baidu.cc.configuration.dao.EnvironmentMapper">
+
+    <select id="findByProjectId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from environment
+        where project_id = #{project_id,jdbcType=INTEGER}
+    </select>
+    
+    <select id="findByNameAndProjectId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from environment
+        where name = #{envName} and project_id = #{projectId,jdbcType=INTEGER}
+    </select>
+
+    <delete id="deleteEnvByProjectId" parameterType="java.lang.Long">
+        delete from environment where project_id = #{project_id,jdbcType=INTEGER}
+    </delete>
+    
+    <select id="findByProjectIds" resultMap="BaseResultMap" parameterType="java.util.List">
+        select
+        <include refid="Base_Column_List"/>
+        from environment
+        where project_id in <foreach item="item" index="index" collection="projectIds" open="(" separator="," close=")">#{item}</foreach>
+    </select>
+</mapper>

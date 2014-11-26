@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.baidu.cc.configuration.dao.ConfigGroupMapper">
+    <select id="findByVersionId" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from config_group
+        where version_id = #{version_id,jdbcType=INTEGER}
+    </select>
+
+    <select id="findConfigGroupIdsByVersionIds" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select id from config_group where version_id in
+        <foreach item="versionId" collection="versionIds" open="("
+                 separator="," close=")">
+            #{versionId, jdbcType=INTEGER}
+        </foreach>
+    </select>
+
+    <select id="findByVersionIds" resultMap="BaseResultMap" parameterType="java.util.List">
+        select
+        <include refid="Base_Column_List"/>
+        from config_group where version_id in
+        <foreach item="item" index="index" collection="verIds" open="(" separator="," close=")">#{item}</foreach>
+    </select>
+</mapper>

@@ -1,0 +1,3 @@
+###set($contextPath = $constants.getConstants("contextPath"))
+#set($contextPath = "")
+#set($webResourcePath = $contextPath + "/resources")

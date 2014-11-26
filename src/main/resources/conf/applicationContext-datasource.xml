@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xmlns:aop="http://www.springframework.org/schema/aop"
+     xmlns:tx="http://www.springframework.org/schema/tx"
+     xsi:schemaLocation="
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd">
+
+	
+	<!-- 动态数据源的父类,其中配置的参数为子数据库的default值 -->
+	<bean id="parentDataSource" class="com.baidu.bjf.datasource.c3p0.ComboPooledDataSourceDelegate"
+		destroy-method="close" abstract="true">
+		<property name="driverClass">
+			<value>${jdbc.driverClassName}</value>
+		</property>
+		<property name="jdbcUrl">
+			<value>${jdbc.url}</value>
+		</property>
+		<property name="user">
+			<value>${jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.password}</value>
+		</property>
+		<property name="maxPoolSize">
+			<value>${jdbc.maxPoolSize}</value>
+		</property>
+		<property name="minPoolSize">
+			<value>${jdbc.minPoolSize}</value>
+		</property>
+		<property name="initialPoolSize">
+			<value>${jdbc.initialPoolSize}</value>
+		</property>
+		<property name="idleConnectionTestPeriod">
+			<value>${jdbc.idleConnectionTestPeriod}
+			</value>
+		</property>
+		<property name="maxIdleTime">
+			<value>${jdbc.maxIdleTime}</value>
+		</property>
+		<property name="checkoutTimeout">
+			<value>${jdbc.checkoutTimeout}</value>
+		</property>
+	</bean>
+
+	<!-- 子数据源,写操作主库,无需修改配置参数 -->
+	<bean id="write" parent="parentDataSource"></bean>
+
+	<!-- 子数据源,只读数据源热read02,只需对url,user,password重新赋值 -->
+	<bean id="read02" destroy-method="close" parent="parentDataSource">
+		<property name="jdbcUrl">
+			<value>${jdbc.read.db02.url}</value>
+		</property>
+		<property name="user">
+			<value>${jdbc.read.db02.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.read.db02.password}</value>
+		</property>
+	</bean>
+
+	<!-- 子数据源,只读数据源热read03,只需对url,user,password重新赋值 -->
+	<bean id="read03" destroy-method="close" parent="parentDataSource">
+		<property name="jdbcUrl">
+			<value>${jdbc.read.db03.url}</value>
+		</property>
+		<property name="user">
+			<value>${jdbc.read.db03.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.read.db03.password}</value>
+		</property>
+	</bean>
+
+	<!-- 子数据源,只读数据源热read04,只需对url,user,password重新赋值 -->
+	<bean id="read04" destroy-method="close" parent="parentDataSource">
+		<property name="jdbcUrl">
+			<value>${jdbc.read.db04.url}</value>
+		</property>
+		<property name="user">
+			<value>${jdbc.read.db04.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.read.db04.password}</value>
+		</property>
+	</bean>
+
+	<!-- 动态数据源 -->
+	<bean id="dataSource" class="com.baidu.bjf.datasource.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<entry key="write" value-ref="write" />
+				<entry key="read02" value-ref="read02" />
+				<entry key="read03" value-ref="read03" />
+				<entry key="read04" value-ref="read04" />
+			</map>
+		</property>
+		<property name="defaultTargetDataSource" ref="write" />
+		<property name="dataSourceKey">
+			<ref local="dynamicDataSourceKey" />
+		</property>
+	</bean>
+
+	<!-- 读写管理 -->
+	<bean id="dynamicDataSourceKey"
+		class="com.baidu.bjf.datasource.DynamicDataSourceKeyImpl">
+		<property name="readDateSourceMap">
+			<map key-type="java.lang.String">
+				<entry key="read02" value="read02" />
+				<entry key="read03" value="read03" />
+				<entry key="read04" value="read04" />
+			</map>
+		</property>
+		<property name="writeKey">
+			<value>write</value>
+		</property>
+		<property name="alwaysReplaceExist" value="false"></property>
+		<property name="strategy" ref="loadLBStrategy"></property>
+	</bean>
+	
+	<bean id="loadLBStrategy" class="com.baidu.bjf.datasource.lb.LoadLBStrategy">
+		<constructor-arg>
+			<set value-type="java.lang.String">
+				<value>read02</value>
+				<value>read03</value>
+				<value>read04</value>
+			</set>
+		</constructor-arg>
+	</bean>
+
+	<bean id="roundRobinLBStrategy"
+		class="com.baidu.bjf.datasource.lb.RoundRobinLBStrategy">
+		<constructor-arg>
+			<map key-type="java.lang.String" value-type="java.lang.Integer">
+				<entry key="read02" value="1" />
+				<entry key="read03" value="1" />
+				<entry key="read04" value="1" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+	<!-- 事务管理拦截器 -->
+	<bean id="transactionInterceptor"
+		class="com.baidu.bjf.transaction.interceptor.SmartTransactionInterceptor">
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="transactionAttributes">
+			<props>
+				<prop key="query*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="is*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="find*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="load*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="count*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="list*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="check*">PROPAGATION_REQUIRED,readOnly</prop>
+				<prop key="save*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="del*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="add*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="edit*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="update*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="mod*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="do*">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="executeService">PROPAGATION_REQUIRED,-Throwable</prop>
+				<prop key="*">PROPAGATION_REQUIRED,readOnly</prop>
+			</props>
+		</property>
+		<property name="transactionEvents">
+			<list>
+				<bean id="transactionalDynamicDataSourceKeySelector" class="com.baidu.bjf.datasource.TransactionalDynamicDataSourceKeySelector">
+					<property name="dataSourceKey" ref="dynamicDataSourceKey"></property>
+				</bean>
+				<ref bean="transactionMonitorEvent"/>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="transactionMonitorEvent" class="com.baidu.fishingnet.bjf.transaction.TransactionMonitorEvent"></bean>
+	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<!-- transaction aop intercepter see applicationContext-interceptors.xml  -->
+	
+</beans>

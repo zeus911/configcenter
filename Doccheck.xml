@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+<module name="Checker">
+    <module name="TreeWalker">
+        <module name="JavadocMethod"/>
+        <module name="JavadocType">
+            <property name="authorFormat" value=""/>
+        </module>
+        <module name="JavadocVariable"/>
+        <module name="JavadocStyle">
+            <property name="checkEmptyJavadoc" value="TRUE"/>
+            <property name="endOfSentenceFormat" value="\S.+\S"/>
+            <property name="checkFirstSentence" value="FALSE"/>
+            <property name="checkHtml"   value="FALSE"/>
+        </module>
+    </module>
+</module>

@@ -1,0 +1,230 @@
+#parse("/cc/constants.vm")
+#parse("/cc/header.vm")
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<div class="layout-content">
+    #parse("/cc/tree.vm")
+    <div class="right-tree pd0x10">
+        
+        <div class="pd10x20">
+    <div class="page-title mb20"><i class="i_icon"></i> 分组列表<a class="btn btn-primary fr" href="#" id="addGroup">添加分组</a></div>
+    <div class="panel">
+      <div class="panel-header">
+      <div class="panel mt10 mb20">
+        <table class="table table_bordered">
+          <thead>
+            <tr>
+              <th width="90">ID</th>
+              <th>群组名</th>
+              <th width="60">&nbsp;</th>
+              <th width="60">&nbsp;</th>
+              <th width="60" style="padding-left:15px;">&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody>
+          #foreach($configGroup in $data.configGroupList)
+            <tr>
+                <td>$configGroup.id</td>
+                <td>$!utils.escapeInH($configGroup.name)</td>
+                <!-- <td class="i-operate"><a href="/configGroup/editConfigGroup.action?reqParam.groupId=$configGroup.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)">编辑</a></td> -->
+                <td class="i-operate"><a href="#" onclick="editGroup('$configGroup.id', '$!utils.escapeInH($configGroup.name)', '$sysUtils.encryptAuthCheck($request,$data.project.id)', '$configGroup.memo')">编辑</a></td>
+                <!-- <td class="i-operate"><a href="/configGroup/delGroup.action?reqParam.groupIds=$configGroup.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)">删除</a></td> -->
+                <td class="i-operate"><a href="#" onclick="return doDele('$configGroup.id')">删除</a></td>
+                <td class="i-operate"><a href="/configItem/listConfigItem.action?reqParam.groupId=$configGroup.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)">管理配置项</a></td>
+            </tr>
+            #end
+            <tr>
+		        <td></td>
+		        <td></td>
+		        <td class="i-operate"></td>
+		        <td class="i-operate"></td>
+		        <td class="i-operate"></td>
+		    </tr>
+          </tbody>
+        </table>
+        #parse("/cc/paging.vm")
+      </div>
+    </div>
+  </div>
+    </div>
+</div>
+<div id="dialog-confirm"  style="display: none">
+      <div class="pd10x20">
+  <div class="page-title mb20"><i class="i_icon"></i>  #if(!$data.configGroup.id) 新增 #else 编辑 #end 分组<span id='closeX'>X</span></div>
+        <div class="form pd10">
+        <form id="form0" method="post" action="/configGroup/saveConfigGroup.action?authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)" >
+            <!-- <input type="hidden" name="reqParam.configGroup.id" value="$!data.configGroup.id"/> -->
+            <input type="hidden" name="reqParam.configGroup.versionId" value="$!data.version.id"/>
+            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td width="20%" align="right"><b class="requier">*</b>配置项群组名：</td>
+                    <td width="80%"  align="left"><input id="cname" type="text" name="reqParam.configGroup.name" value="$!utils.escapeInH($!data.configGroup.name)" class="input-large" size="50">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">简介：</td>
+                    <td align="left"><textarea id="cmemo" name="reqParam.configGroup.memo" class="textarea">$!utils.escapeInH($!data.configGroup.memo)</textarea></td>
+                </tr>          
+                <tr>
+                  <td align="right">&nbsp;</td>
+                  <!-- <td align="left"><a class="btn btn-primary btn-large" onclick="return doConfirm();">确认</a>  <a class="btn  btn-large" id="closeCongf">取消</a> </td> -->
+                  <td align="left"><a class="btn btn-primary btn-large" id="submitConf">确认</a>  <a class="btn  btn-large" id="closeCongf">取消</a> </td>
+                </tr>
+              </table>
+              </form>
+         </div>
+    </div>
+    </div>
+#parse("/cc/footer.vm")
+    <script>
+$(function() {
+  var closeModule = function() {
+      var wnd = $(window),
+        doc = $(document);
+      if (wnd.height() > doc.height()) { //当高度少于一屏
+        wHeight = wnd.height();
+      } else { //当高度大于一屏
+        wHeight = doc.height();
+      }
+      $("body").append("<div ID='MaskID'></div>");
+      $("body").find("#MaskID").width(wnd.width()).height(wHeight)
+        .css({
+          position: "absolute",
+          top: "0px",
+          left: "0px",
+          background: "#ccc",
+          filter: "Alpha(opacity=90);",
+          opacity: "0.5",
+          zIndex: "10"
+        });
+    }
+    //添加分组
+  $('#addGroup').click(function() {
+    closeModule();
+    $("#dialog-confirm").dialog({
+      autoOpen: true,
+      module: true,
+      height: 500,
+      width: 750,
+      overlay: {
+        opacity: 0.5,
+        background: "black",
+        overflow: 'auto'
+      },
+    });
+    $('#cname').val('');
+    $('#cmemo').val('');
+    $('.ui-helper-clearfix').css('display', 'none');
+    $('#closeX').click(function() {
+      $('#dialog-confirm').dialog('close');
+      $('#MaskID').remove();
+    });
+    $('#closeCongf').click(function() {
+      $('#dialog-confirm').dialog('close');
+      $('#MaskID').remove();
+    });
+    $('#submitConf').click(function(){
+      if($('#cname').val() == ''){
+        alert('请填写配置项群组名');
+      }else{
+         var parms = $('#form0').serialize();
+        jQuery.ajax({
+          url: '/configGroup/saveConfigGroup.action?authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)',
+          data: parms,
+          type: 'post',
+          success: function(data){
+            window.location.href = '/configGroup/listConfigGroup.action?reqParam.versionId=$!data.version.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+          }
+        })
+      }
+    })
+  });
+  //编辑分组
+  window.editGroup = function(id, name, jps, memo) {
+    $('#cname').val(name);
+    $('#cmemo').val(memo);
+    closeModule();
+    $("#dialog-confirm").dialog({
+      autoOpen: true,
+      module: true,
+      height: 500,
+      width: 700,
+      overlay: {
+        opacity: 0.5,
+        background: "black",
+        overflow: 'auto'
+      },
+    });
+    $('.ui-helper-clearfix').css('display', 'none');
+    $('#closeX').click(function() {
+      $('#dialog-confirm').dialog('close');
+      $('#MaskID').remove();
+    });
+    $('#closeEnv').click(function() {
+      $('#dialog-confirm').dialog('close');
+      $('#MaskID').remove();
+    });
+    $('#submitConf').click(function(){
+      if($('#cname').val() == ''){
+        alert('请填写配置项群组名');
+      }else{
+        var parms = $('#form0').serialize();
+        jQuery.ajax({
+          url: '/configGroup/saveConfigGroup.action?authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)&reqParam.configGroup.id=' +id,
+          data: parms,
+          type: 'post',
+          success: function(data){
+            window.location.href = '/configGroup/listConfigGroup.action?reqParam.versionId=$!data.version.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+          }
+        })
+      }
+    })
+  }
+  window.doConfirm = function() {
+    if (jQuery.trim(jQuery('#cname').val()) == '') {
+      alert('配置项群组名！');
+      return false;
+    }
+    jQuery.post("/configGroup/saveConfigGroup.action", {
+        'reqParam.configGroup.id': "$!data.configGroup.id",
+        'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)',
+        'reqParam.configGroup.versionId': "$!data.version.id",
+        'reqParam.configGroup.name': jQuery('#cname').val(),
+        'reqParam.configGroup.memo': jQuery('#cmemo').val()
+      },
+      function(json) {
+        if (json.status != 0) {
+          var errorMsg = "";
+          jQuery.each(json.statusInfo.error, function(key, val) {
+            errorMsg = errorMsg + "" + key + ":" + val + "\n";
+          });
+          alert(errorMsg);
+
+        } else {
+          // window.location.href = '/configGroup/listConfigGroup.action?reqParam.versionId=$!data.version.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+        }
+      }, "json");
+    return false;
+  }
+});
+
+function doDele(id) {
+  console.log(id)
+  // /configGroup/delGroup.action?reqParam.groupIds=$configGroup.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)
+  if (confirm('确认删除？')) {
+    jQuery.getJSON("/configGroup/delGroup.action", {
+        'reqParam.groupIds': id,
+        'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)'
+      },
+      function(json) {
+        if (json.status != 0) {
+          alert("服务器端异常请联系管理员！！");
+        } else {
+          window.location.href = '/configGroup/listConfigGroup.action?reqParam.versionId=$!data.version.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+        }
+      });
+  }
+  return false;
+}
+    </script>
+
+</div>

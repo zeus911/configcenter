@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="dist" basedir="." name="configcenter">
+
+ <property name="java.src" value="src/main/java" />
+ <property name="resources.src" value="src/main/resources" />
+ <property name="war.src" value="war" />
+ <property name="war.dest" value="dist/war" />
+ <property name="classes.dest" value="${war.src}/WEB-INF/classes" />
+ <property name="dist" value="dist" />
+ <property name="source-encoding" value="UTF-8" />
+ <property name="warName" value="ROOT.war"/>
+ <property name="lib.dir" value="WebContent/WEB-INF/lib"/>
+  
+   <!--编译java源文件所需的jar文件 -->
+ <path id="build-classpath">
+  <fileset dir="${lib.dir}">
+   <include name="*.jar" />
+  </fileset>
+ </path>
+ 
+ <!--清理-->
+ <target name="clean">
+  <delete dir="${dist}" />
+  <delete dir="${war.src}"/>
+ </target>
+ 
+ <!-- 初始化，建立相关的文件夹-->
+ <target name="init" depends="clean">
+  <mkdir dir="${dist}"/>
+  <mkdir dir="${war.dest}"/>
+  <mkdir dir="${war.src}"/>
+  <mkdir dir="${classes.dest}"/>
+ </target> 
+ 
+  <!-- 编译java源文件并拷贝资源文件到相应的文件夹-->
+ <target name="compile" depends="init">
+  <javac srcdir="${java.src}" destdir="${classes.dest}"
+   classpathref="build-classpath" encoding="${source-encoding}"
+   debug="true" debuglevel="source,lines,vars">
+  </javac>
+  <copy todir="${classes.dest}">
+   <fileset dir="${resources.src}">
+   </fileset>
+  </copy>
+ </target>
+ 
+  <!--拷贝WebContent文件到相应的文件夹-->
+ <target name="copy">
+  <copy todir="${war.src}">
+   <fileset dir="WebContent">
+    <exclude name="META-INF"/>
+   </fileset>
+  </copy>
+  </target>
+ 
+ <!--打包-->
+ <target name="dist" depends="compile,copy">
+  <war warfile="${war.dest}/${warName}" webxml="${war.src}/WEB-INF/web.xml">
+   <fileset dir="${war.src}" >
+   </fileset>
+  </war>
+ </target>
+ 
+</project>

@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans 
+			http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+	<!-- Main spring IOC entrance -->
+	<import resource="applicationContext-properties.xml" />
+	<import resource="applicationContext-datasource-dbproxy.xml" />
+	<import resource="applicationContext-interceptors.xml" />
+	<import resource="applicationContext-sqlmapping.xml" />
+	<import resource="applicationContext-cache-memcache.xml" />
+	<import resource="applicationContext-web.xml" />
+	<import resource="applicationContext-remote.xml" />
+	<import resource="applicationContext-monitor.xml" />
+
+	<import resource="classpath*:conf/*_applicationContext-deploy.xml" />
+
+	<!-- annotation scan -->
+	<context:component-scan base-package="com.baidu.cc">
+	</context:component-scan>
+
+	<bean
+		class="com.baidu.bjf.scheduling.annotation.ThreadAnnotationBeanPostProcessor">
+		<!-- <property name="maxThreadPoolCount" value="5"></property> <property 
+			name="maxThreadCountInPool" value="12"></property> -->
+		<property name="threadEvent">
+			<bean class="com.baidu.fishingnet.bjf.scheduling.ThreadEventMonitor"></bean>
+		</property>
+	</bean>
+
+	<bean id="componentRegisterCenter" class="com.baidu.lego.service.register.ComponentRegisterCenter">
+		<property name="basePackage" value="com.baidu.cc"></property>
+		<property name="location" value="classpath:ComponentRegister.properties"></property>
+	</bean>
+	<bean class="com.baidu.lego.MessageExecuteBus">
+		<property name="componentRegisterCenter" ref="componentRegisterCenter"></property>
+	</bean>
+	<bean
+		class="com.baidu.bjf.beans.context.annotation.CommonAnnotationBeanPostProcessor">
+		<property name="callback">
+			<bean class="com.baidu.lego.service.ReferParserCallback" scope="singleton">
+			</bean>
+		</property>
+	</bean>
+
+	
+</beans>

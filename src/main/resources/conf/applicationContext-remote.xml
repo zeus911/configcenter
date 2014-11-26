@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<bean id="remoteInvocationMonitor" class="com.baidu.fishingnet.bjf.remoting.RemoteInvocationMonitor">
+		<property name="monitorResultSize" value="true"></property>
+	</bean>
+	<bean id="remoteInvocationExecutorMonitor" class="com.baidu.fishingnet.bjf.remoting.RemoteInvocationExecutorMonitor"></bean>
+	
+
+	<!--  提供注解的RMI服务端和客户端的支持  -->
+	<bean
+		class="com.baidu.bjf.beans.context.annotation.CommonAnnotationBeanPostProcessor">
+		<property name="callback">
+			<bean
+				class="com.baidu.bjf.remoting.rmi.annotation.RemoteServiceAnnotationResolver"
+				scope="singleton">
+				<property name="remoteInvocationInterceptor" ref="remoteInvocationMonitor"></property>	
+				<property name="remoteInvocationExecutorInterceptor" ref="remoteInvocationExecutorMonitor"></property>	
+			</bean>
+		</property>
+	</bean>
+
+	<!--  提供注解的McPack服务端和客户端的支持  -->
+	<bean
+		class="com.baidu.bjf.beans.context.annotation.CommonAnnotationBeanPostProcessor">
+		<property name="callback">
+			<bean
+				class="com.baidu.bjf.remoting.mcpack.annotation.McpackRpcServiceAnnotationResolver"
+				scope="singleton">
+				<property name="remoteInvocationInterceptor" ref="remoteInvocationMonitor"></property>	
+				<property name="remoteInvocationExecutorInterceptor" ref="remoteInvocationExecutorMonitor"></property>	
+			</bean>
+		</property>
+	</bean>
+
+	<!--  提供注解的RMI 负载均衡的支持  -->
+	<bean
+		class="com.baidu.bjf.beans.context.annotation.CommonAnnotationBeanPostProcessor">
+		<property name="callback">
+			<bean
+				class="com.baidu.bjf.lb.remoting.annotation.RmiProxyLBAnnotationParser">
+				<property name="remoteInvocationInterceptor" ref="remoteInvocationMonitor"></property>	
+				<property name="remoteInvocationExecutorInterceptor" ref="remoteInvocationExecutorMonitor"></property>	
+				</bean>
+		</property>
+	</bean>
+	
+	<!--  提供注解的Mcpack RPC 负载均衡的支持  -->
+	<bean
+		class="com.baidu.bjf.beans.context.annotation.CommonAnnotationBeanPostProcessor">
+		<property name="callback">
+			<bean
+				class="com.baidu.bjf.lb.remoting.annotation.RpcProxyLBAnnotationParser">
+				<property name="remoteInvocationInterceptor" ref="remoteInvocationMonitor"></property>	
+				<property name="remoteInvocationExecutorInterceptor" ref="remoteInvocationExecutorMonitor"></property>	
+				</bean>
+		</property>
+	</bean>	
+
+</beans>

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="rigel" version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+	<display-name>rigel</display-name>
+	<context-param>
+		<param-name>log4jConfigLocation</param-name>
+		<param-value>/WEB-INF/classes/log4j.properties</param-value>
+	</context-param>
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath*:conf/applicationContext.xml</param-value>
+	</context-param>
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>com.baidu.bjf.beans.web.InitSystemListener</listener-class>
+	</listener>
+
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>utf-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter>
+	<filter>
+		<filter-name>dbstatuscleaner</filter-name>
+		<filter-class>com.baidu.bjf.datasource.filter.DbReadWriteStatusCleanFilter</filter-class>
+	</filter>
+
+	<filter>
+		<filter-name>struts-cleanup</filter-name>
+		<filter-class>org.apache.struts2.dispatcher.ActionContextCleanUp</filter-class>
+	</filter>
+	<filter>
+		<filter-name>struts2</filter-name>
+		<filter-class>com.baidu.bjf.web.struts2.dispatcher.SmartFilterDispatcher</filter-class>
+		<init-param>
+			<param-name>actionPackages</param-name>
+			<param-value>com.baidu.rigel</param-value>
+		</init-param>
+		<init-param>
+			<param-name>sessionClassName</param-name>
+			<param-value>java.util.HashMap</param-value>
+		</init-param>
+	</filter>
+
+
+
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>LegeParametersSupport</filter-name>
+		<filter-class>com.baidu.lego.web.ParameterSupportFilter</filter-class>
+		<init-param>
+			<param-name>enableDecode</param-name>
+			<param-value>false</param-value>
+		</init-param>
+		<init-param>
+			<param-name>decode</param-name>
+			<param-value>utf-8</param-value>
+		</init-param>
+	</filter>
+
+
+	<filter-mapping>
+		<filter-name>LegeParametersSupport</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>monitorClearFilter</filter-name>
+		<filter-class>com.baidu.fishingnet.web.MonitorFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>monitorClearFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>xa-cleanup</filter-name>
+		<filter-class>com.baidu.bjf.remoting.support.transaction.filter.XATransactionCleanupFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>xa-cleanup</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>dbstatuscleaner</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>ValidatorJsonGenFilter</filter-name>
+		<filter-class>com.baidu.lego.web.validator.filter.ValidatorJsonGeneratorFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>ValidatorJsonGenFilter</filter-name>
+		<url-pattern>/validatorGenFilter</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>loginFilter</filter-name>
+		<filter-class>com.baidu.cc.web.filter.LoginFilter</filter-class>
+		<init-param>
+			<param-name>excludePath</param-name>
+			<param-value>/user/login.action;/user/logout.action;/fortest/checkVersionTag.action;/fortest/getConfigItems.action;</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>loginFilter</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>userMgrFilter</filter-name>
+		<filter-class>com.baidu.cc.web.filter.UserMgrFilter</filter-class>
+		<init-param>
+			<param-name>includePath</param-name>
+			<param-value>/user/listUser.action;/user/editUser.action;/user/saveUser.action;/user/delUser.action;</param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>userMgrFilter</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+
+
+
+	<filter>
+		<filter-name>authCheckFilter</filter-name>
+		<filter-class>com.baidu.cc.web.filter.AuthCheckFilter</filter-class>
+		<init-param>
+			<param-name>includePath</param-name>
+			<param-value>
+                /project/editProject.action;/project/saveProject.action;/project/delProject.action;
+                /env/*;/version/*;/configGroup/*;/configItem/*;
+                /access/*;
+            </param-value>
+		</init-param>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>authCheckFilter</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>struts-cleanup</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>struts2</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+
+	<filter>
+		<filter-name>logClientFilter</filter-name>
+		<filter-class>com.baidu.rigel.logclient.sdk.HttpLogFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>logClientFilter</filter-name>
+		<url-pattern>*.action</url-pattern>
+	</filter-mapping>
+
+
+	<servlet>
+		<description></description>
+		<servlet-name>JsonRpcServlet</servlet-name>
+		<servlet-class>com.baidu.bjf.remoting.mcpack.server.RpcServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>velocity</servlet-name>
+		<servlet-class>org.apache.velocity.tools.view.servlet.VelocityViewServlet</servlet-class>
+		<init-param>
+			<param-name>org.apache.velocity.toolbox</param-name>
+			<param-value>/WEB-INF/toolbox.xml</param-value>
+		</init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>JsonRpcServlet</servlet-name>
+		<url-pattern>/rpc/*</url-pattern>
+	</servlet-mapping>
+
+
+	<!-- Map *.vm files to Velocity -->
+	<servlet-mapping>
+		<servlet-name>velocity</servlet-name>
+		<url-pattern>*.vm</url-pattern>
+	</servlet-mapping>
+
+	<error-page>
+		<error-code>404</error-code>
+		<location>/notfound.html</location>
+	</error-page>
+	<error-page>
+		<error-code>500</error-code>
+		<location>/systembusy.html</location>
+	</error-page>
+
+	<login-config>
+		<auth-method>BASIC</auth-method>
+	</login-config>
+</web-app>

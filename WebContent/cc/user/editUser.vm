@@ -1,0 +1,47 @@
+#parse("/cc/constants.vm")
+#parse("/cc/header.vm")
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<div class="layout-content">
+    #parse("/cc/tree.vm")
+    <div class="right-tree pd0x10">
+        <div class="pd10x20">
+            <div class="page-title mb20"><i class="i_icon"></i>  #if(!$data.user.id) 新增 #else 编辑 #end 用户信息 </div>
+            <div class="form pd10">
+                <iframe src="" name="hideIframe" id="backHeader" style="display:none;"></iframe>
+                <form id="form0" method="post" action="/user/saveUser.action" target="hideIframe">
+                    <input type="hidden" name="reqParam.user.id" value="$!data.user.id"/>
+                    <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                        <tr>
+                            <td width="20%" align="right"><b class="requier">*</b>用户名：</td>
+                            <td width="80%"  align="left"><input type="text" name="reqParam.user.name" value="$!utils.escapeInH($!data.user.name)" id="vname" class="input-large" size="50">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align="right">登录密码：</td>
+                            <td align="left"><input id="vpassword" type="password" name="reqParam.user.password" value="$!data.user.password"/></td>
+                        </tr>
+                        <tr>
+                            <td align="right">API密码：</td>
+                            <td align="left"><input id="vApiPassword" type="password" name="reqParam.user.apiPassword" value="$!data.user.apiPassword"/></td>
+                        </tr>
+                        <tr>
+                            <td align="right">&nbsp;</td>
+                            <td align="left"><a href="#" class="btn btn-primary btn-large" onclick="document.getElementById('form0').submit()">确认</a>  <a class="btn  btn-large">取消</a> </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    
+    setTimeout(function () {
+        document.getElementById('backHeader').onload = function () {
+           // location.href = '/project/listProject.action';
+        } 
+    }, 1000)
+</script>
+</div>
+#parse("/cc/footer.vm")

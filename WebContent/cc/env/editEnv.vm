@@ -1,0 +1,64 @@
+#parse("/cc/constants.vm")
+#parse("/cc/header.vm")
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <div class="layout-content">
+  #parse("/cc/tree.vm")
+    <div class="right-tree pd0x10">
+        <div class="pd10x20">
+	<div class="page-title mb20"><i class="i_icon"></i>  #if($data.env.id)编辑 #else 新增 #end 环境 (项目名称：$data.project.name )</div>
+        <div class="form pd10">
+        <form id="form0"  method="post" action="/env/saveEnv.action" >
+	    <input type="hidden" name="reqParam.env.id" value="$!data.env.id"/>
+	    <input type="hidden" name="reqParam.env.projectId" value="$!data.project.id"/>
+            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td width="20%" align="right"><b class="requier">*</b>环境名称：</td>
+                    <td width="80%"  align="left"><input type="text" name="reqParam.env.name" value="$!utils.escapeInH($!data.env.name)" id="ename" class="input-large" size="50">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">简介：</td>
+                    <td align="left"><textarea id="ememo" name="reqParam.env.memo" value="$!utils.escapeInH($!data.env.memo)" class="textarea">$!data.env.memo</textarea></td>
+                </tr>          
+                <tr>
+                  <td align="right">&nbsp;</td>
+                  <td align="left"><a class="btn btn-primary btn-large" onclick="return doConfirm()">确认</a>  <a class="btn  btn-large">取消</a> </td>
+                </tr>
+              </table>
+              </form>
+         </div>
+    </div>
+    </div>
+  <script>
+  function doConfirm(){
+  		if(jQuery.trim(jQuery('#ename').val())==''){
+  			alert('请填写环境名称！');
+  			return false;
+  		}
+	    jQuery.post("/env/saveEnv.action", 
+	  			{ 'reqParam.env.id': "$!data.env.id",
+                  'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)',
+	  			  'reqParam.env.projectId': "$!data.project.id", 
+	  			  'reqParam.env.name': jQuery('#ename').val(), 
+	  			  'reqParam.env.memo': jQuery('#ememo').val() },
+	  			function(json){
+	  				if(json.status!=0){
+                        var errorMsg = "";
+                        jQuery.each(json.statusInfo.error,function(key,val){
+                            errorMsg = errorMsg + "" + key + ":" + val + "\n";
+                        });
+                        alert(errorMsg);
+
+                    }else{
+					  	window.location.href='/env/listEnv.action?reqParam.projectId=$!data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+				  	}
+				},"json");
+		return false;
+	}
+  </script>
+</div>
+  
+  
+</div>
+#parse("/cc/footer.vm")

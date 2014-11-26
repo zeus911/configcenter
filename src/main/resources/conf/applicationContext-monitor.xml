@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+	
+	
+	<!-- 
+	<bean id="dynamicMBeanExporter" class="com.baidu.rigel.service.jmx.DynamicMBeanExporter">
+	    <property name="beans">
+	      <map>
+	        <entry key="DynamicManager:name=DynamicStracktraceEntry">
+	        	<bean class="com.baidu.rigel.service.monitor.DynamicStracktraceEntry"></bean>
+	        </entry>
+	      </map>
+	    </property>
+	</bean>
+	
+	<bean id="dynamicMBeanManager" class="com.baidu.rigel.service.jmx.DynamicMBeanManager">
+		<property name="dynamicMBeanExporter" ref="dynamicMBeanExporter">
+		</property>
+	</bean>	
+	 -->
+	
+	<bean class="com.baidu.fishingnet.bjf.transaction.TransactionMonitorManager">
+		<property name="maxErrorCount" value="200"/>
+		<property name="maxTopTimeCostCount" value="5"/>
+	</bean>	
+	
+</beans>

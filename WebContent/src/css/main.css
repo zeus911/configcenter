@@ -1,0 +1,25 @@
+/**
+  针对项目的布局样式
+*/
+.lego{}
+.lego .nav a {cursor: pointer;}
+
+
+.message-wrap {margin-left:10px;padding-bottom:20px;border-bottom:dashed 1px #ccc;}
+.text-center {text-align:center}
+.margin10 {margin:10px}
+.vertical-middle td{vertical-align:middle}
+
+
+
+
+.mr5 {margin-right:5px}
+.mr10 {margin-right:10px}
+.ml5 {margin-left:5px}
+.ml10 {margin-left:10px}
+
+.margin0 {margin:0}
+.lh20 {line-height:20px}
+
+.min1280 {min-width:1280px}
+

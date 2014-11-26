@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+	
+	<bean id="myCacheManager"
+		class="com.baidu.bjf.cache.memcached.CacheManagerImpl">
+		<property name="getType">
+			<value>1</value>
+		</property>
+		<property name="domainList">
+			<list>
+				<ref local="domain1"/>
+			</list>
+		</property>
+		<property name="cacheProperties" ref="cacheProperties"></property>
+	</bean>
+	<bean id="domain1" class="com.baidu.bjf.cache.memcached.CacheDomain">
+		<property name="domain">
+			<map key-type="java.lang.String">
+				<entry key="cacheClient1" value-ref="tcCacheClient01" />
+				<entry key="cacheClient2" value-ref="jxCacheClient01" />
+			</map>
+		</property>
+		<property name="domainName">
+			<value>domain1</value>
+		</property>
+	</bean>
+	
+	<bean id="tcCacheClient01"
+		class="com.baidu.bjf.cache.memcached.CacheClient">
+		<property name="cachename">
+			<value>${tc01.sessionCache.cachename}</value>
+		</property>
+		<property name="addrs">
+			<value>${tc01.sessionCache.addrs}</value>
+		</property>
+	</bean>
+	
+	<bean id="jxCacheClient01"
+		class="com.baidu.bjf.cache.memcached.CacheClient">
+		<property name="cachename">
+			<value>${jx01.sessionCache.cachename}</value>
+		</property>
+		<property name="addrs">
+			<value>${jx01.sessionCache.addrs}</value>
+		</property>
+	</bean>
+	
+	<bean id="cacheProperties" class="com.baidu.bjf.cache.memcached.CacheProperties">
+		<property name="expiration" value="600"></property>
+	</bean>	
+
+	<bean class="com.baidu.bjf.cache.annotation.CacheAnnotationBeanPostProcessor"></bean>
+
+</beans>

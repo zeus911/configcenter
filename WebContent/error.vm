@@ -1,0 +1,53 @@
+你访问的页面出错了：$!request.msg
+
+
+##
+###if ($ajax)
+##
+##	#if (${actionErrors})
+##
+##	{
+##	    "status": 500,
+##	    "statusInfo": "$!actionErrors"
+##	}
+##
+##	#end
+###else
+##
+##
+##
+##<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+##<html>
+##<head>
+##<title>出错</title>
+##<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+##<link rel="stylesheet" href="${staticRoot}/sc-sale/css/global.css" type="text/css">
+##</head>
+##<body class="middlePage">
+###set($errorText = "返回")
+###if($errorInfo.linkName)
+##	#set($errorText = $errorInfo.linkName)
+###end
+##<div class="wrapper">
+##	<div class="mess">
+##		<div class="area-w"></div><div class="area-v"></div>
+##		<div class="area icon-error">
+##			<p><b>您访问的页面出错了</b></p>
+##			<p class="errorMessage">$!errorInfo.errorMessage</p>
+##			#if($errorInfo.flag == 0)
+##				<a href="#" onclick="history.go(-1);">$!errorText</a>
+##			#else
+##				<a href="$errorInfo.errorURL">$!errorText</a>
+##			#end
+##		</div>
+##		<div class="area-v"></div><div class="area-w"></div>
+##	</div>
+##</div>
+##
+##错误信息: $!actionErrors
+##
+##</body>
+##</html>
+##
+##
+###end

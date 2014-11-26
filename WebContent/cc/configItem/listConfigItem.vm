@@ -1,0 +1,165 @@
+#parse("/cc/constants.vm")
+#parse("/cc/header.vm")
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<div class="layout-content">
+    #parse("/cc/tree.vm")
+    <div class="right-tree pd0x10">
+        <div class="pd10x20">
+    <div class="page-title mb20"><i class="i_icon"></i> 配置项列表</div>
+    
+    <div class="panel pd10">
+	    <div class="panel-tab">
+	        <ul>
+	            <li class="active" id="a1" onclick="setTab('a',1,2)">逐条维护</li>
+	            <li id="a2" onclick="setTab('a',2,2)">批量维护</li>
+	            <div class="clear"></div>
+	        </ul>
+	    </div>
+	    <div class="panel-main">
+			<!-- content1 start -->
+	        <div id="con_a_1" class="hover mt10 mb20">
+			<a class="btn btn-primary fr" href="#" onclick="return doSave();">保存修改</a>
+			<script>
+			var lineCounter = 0;
+			var batchStr = '';
+			</script>
+			<table class="table table_bordered">
+	          <thead>
+	            <tr>
+		            <th width="40%">key</th>
+		            <th width="40%">value</th>
+		            <th></th>
+	            </tr>
+	          </thead>
+	          <tbody id="tbd">
+	          #foreach($configItem in $data.configItemList)
+	            <tr id="o_$velocityCount" class="items">
+	                <td class="name"><input id='o_${velocityCount}_name' type="text" value="$!utils.escapeInH($!configItem.name)" size="50"/></td>
+	                <td class="val"><input id='o_${velocityCount}_val' type="text" value="$!utils.escapeInH($!configItem.val)" size="50"/></td>
+	                <!--<td class="memo"><input id='o_${velocityCount}_memo' type="text" value="$!utils.escapeInH($!configItem.memo)" size="50"/></td>
+	                <td class="share">
+	                    <select id='o_${velocityCount}_share'>
+	                        <option value="true" #if($configItem.shareable=="true") selected="true" #end>是</option>
+	                        <option value="false" #if($configItem.shareable=="false") selected="true" #end>否</option>
+	                    </select>
+	                </td>-->
+	                <td>
+	                   <a class="btn btn-primary fr" href="#" onclick="return delLine('o_$velocityCount');">删除</a>
+	                </td>
+	            </tr>
+	            <script>
+	            lineCounter = $velocityCount;
+	            batchStr += ('$!utils.escapeInJ($!configItem.name)'+'='+'$!utils.escapeInJ($!configItem.val)'+'\n');
+	            </script>
+	            #end
+	            <tr>
+			        <td></td>
+			        <td></td>
+			        <td></td>
+			    </tr>
+	          </tbody>
+        	</table>
+	        #parse("/cc/paging.vm")
+	        <a class="btn btn-primary fr" href="#" onclick="return addLine();">添加一行</a>
+		</div>
+		<!-- content1 end -->
+		<!-- content2 start -->
+	    <div id="con_a_2" style="display:none;">
+			<a class="btn btn-primary fr" href="#" onclick="return doBatchSave();">保存修改</a> 
+			<textarea id="batchConfigItems" onfocus="if(this.value=='在此贴入properties文件中的内容'){this.value='';}"
+					onblur="if(this.value==''){this.value='在此贴入properties文件中的内容';}"
+					style="min-width: 100%;min-height: 600px;background-color:#d5f1e4;">在此贴入配置项，每行一条</textarea>
+		</div>
+		<!-- content2 end -->
+	  </div>
+	</div>
+    
+	
+  </div>
+  <script>
+  $(function() { 
+		if(batchStr != ''){
+			$('#batchConfigItems').val(batchStr);
+		}
+	});
+  
+  function addLine(){
+  		lineCounter++;
+		$('#tbd > tr:last-child')
+		.before('<tr id="o_'+lineCounter+'" class="items">'
+				+'<td class="name"><input type="text" value="" size="50"/></td>'
+				+'<td class="val"><input type="text" value="" size="50"/></td>'
+                +'<td><a class="btn btn-primary fr" href="#" onclick=\'return delLine("o_'+lineCounter+'");\'>删除</a>'
+                +'</td>'
+                +'</tr>');
+		return false;
+  }
+  function delLine(id){
+  		$('#'+id).remove();
+  		return false;
+  }
+  function doSave(){
+  		var dataStr = '';
+  		var itemList = new Array();
+		var hasErr = false;
+  		$("#tbd").children("tr.items").each(function(){
+  			var item = new Object();
+  			item.name = $(this).children("td.name").children().val();
+  			item.val = $(this).children("td.val").children().val();
+  			if(jQuery.trim(item.name) == '' || jQuery.trim(item.val) == ''){
+				hasErr = true;
+  			}
+		    itemList.push(item);
+		  });
+		if(itemList.length==0){
+			alert('请先设置配置项！');
+			return false;
+		}
+		if(hasErr){
+			alert('key和value都不能为空！');
+			return false;
+		}
+		for(var i=0;i<itemList.length;i++){
+			var item = itemList[i];
+			dataStr+=(item.name+'='+item.val+'\n');
+		}
+		jQuery.post("/configItem/batchInsertConfigItem.action", 
+	  			{ 'reqParam.versionId': "$!data.version.id",
+	  			  'reqParam.groupId': "$!data.configGroup.id",
+                  'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)',
+	  			  'reqParam.content': dataStr }, 
+	  			function(json){
+	  				if(json.status!=0){
+		  				alert("服务器端异常请联系管理员！！");
+				  	}else{
+					  	window.location.href='/configItem/listConfigItem.action?reqParam.groupId=$!data.configGroup.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+				  	}
+				},"json");
+  }
+  function doBatchSave(){
+  		if(jQuery.trim($('#batchConfigItems').val())==''){
+  			alert('请先设置配置项！');
+			return false;
+  		}
+  		jQuery.post("/configItem/batchInsertConfigItem.action", 
+	  			{ 'reqParam.versionId': "$!data.version.id",
+	  			  'reqParam.groupId': "$!data.configGroup.id",
+                  'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)',
+	  			  'reqParam.content': jQuery.trim($('#batchConfigItems').val()) }, 
+	  			function(json){
+	  				if(json.status!=0){
+                        var errorMsg = "";
+                        jQuery.each(json.statusInfo.error,function(key,val){
+                            errorMsg = errorMsg + "" + key + ":" + val + "\n";
+                        });
+                        alert(errorMsg);
+                    }else{
+					  	window.location.href='/configItem/listConfigItem.action?reqParam.groupId=$!data.configGroup.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+				  	}
+				},"json");
+		return false;
+  }
+  </script>
+    </div>
+</div>
+#parse("/cc/footer.vm")

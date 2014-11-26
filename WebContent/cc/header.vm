@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>配置中心平台</title>
+<link href="${webResourcePath}/css/style.css" rel="stylesheet" type="text/css">
+<script src="${webResourcePath}/js/jquery-1.10.2.js"></script>
+<script src="${webResourcePath}/js/common.js" type="text/javascript"></script>
+<script src="${webResourcePath}/js/jquery-ui-1.10.4.custom.min.js"></script>
+<script src="${webResourcePath}/js/jquery.ui.datepicker.js" type="text/javascript"></script>
+<script src="${webResourcePath}/js/jquery.ui.dialog.js" type="text/javascript"></script>
+<script src="${webResourcePath}/js/jquery-cookie.js" type="text/javascript"></script>
+<link rel="StyleSheet" href="${webResourcePath}/js/model/dtree/dtree.css" type="text/css" />
+<script type="text/javascript" src="${webResourcePath}/js/model/dtree/dtree.js"></script>
+<link rel="StyleSheet" href="${webResourcePath}/js/model/xdialog/xDialog.css" type="text/css" />
+<script type="text/javascript" src="${webResourcePath}/js/model/xdialog/xDialog.js"></script>
+<link href="${webResourcePath}/css/ui-lightness/jquery-ui-1.10.4.custom.min.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<!--header-->
+<div class="header">
+    <div class="h_logo"><a href="#" title="配置中心平台"><img src="${webResourcePath}/images/qaup_logo.png" alt=""/></a></div>
+    <div class="h-menu">
+        <ul class="h-nav">
+##            <li><a href="#">首页</a><span></span></li>
+##            <li><a href="/project/listProject.action">配置管理</a><span></span></li>
+##            <li><a href="#">导入导出</a><span></span></li>
+            <!--<li>
+                <div class="btn-dropdown drop-heigth">
+                    <a class="btn dropdown-nav">权限管理 <i class="select-open"></i></a>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="/user/listUser.action">用户列表</a></li>
+                        <li><a href="/user/listAccess.action">用户授权</a></li>
+                    </ul>
+                </div>
+            </li>-->
+        </ul>
+    </div>
+    <div class="h-extra"> 
+        <div class="btn-dropdown drop-heigth">
+            <a class="btn dropdown-extra"><span id="userNameSp"></span><span><a class="btn dropdown-extra" href="#" onclick="doLogout()">退出</a></span> </a>
+            <!--<ul class="dropdown-menu dropdown-menu-right">
+                <li><a href="#">个人中心</a></li>
+                <li><a href="/user/logout.action">退出</a></li>
+            </ul>-->
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+#if ($actionErrors.size() > 0)
+	<div class="text-error message-wrap">
+	    操作结果: <font color="#FF0000">$actionErrors</font>
+	</div>
+#end
+#if ($actionMessages.size() > 0)
+    <div class="text-error message-wrap">
+        操作结果:  <font color="#FF0000">$actionMessages</font>
+    </div>
+#end
+<script>
+jQuery(function(){
+	var uid = jQuery.cookie('rcc_uid');
+	var uname = jQuery.cookie('rcc_name');
+	if(uid && uname){
+		jQuery('#userNameSp').html(uname);
+	}
+});
+
+function doLogout() {
+    jQuery.post("/user/logout.action", null,
+            function(json){
+                window.location.href='/project/listProject.action';
+    },"json");
+}
+</script>
+</body>
+</html>

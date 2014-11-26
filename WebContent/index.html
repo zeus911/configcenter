@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>配置中心平台</title>
+<link href="resources/css/style-login.css" rel="stylesheet"
+	type="text/css">
+<script src="resources/js/jquery-1.10.2.js"></script>
+<script src="resources/js/common.js" type="text/javascript"></script>
+<link href="resources/css/font-awesome.css" rel="stylesheet" />
+</head>
+<body style="background: #fff">
+	<div class="layout_header">
+		<div class="header">
+			<div class="h_logo">
+				<a href="#" title=""><img src="resources/images/qaup_logo.png"
+					alt="" />
+				</a>
+			</div>
+		</div>
+	</div>
+	<div class="main clearfix">
+		<div class="header"></div>
+		<div class="account-container">
+			<!-- <div class="h_logo"><a href="#" title=""><img src="resources/images/qaup_logo.png" alt=""/></a></div> -->
+			<div class="page-title">
+				<span>登录</span>
+			</div>
+			<div class="form form-border">
+				<form action="user/login.action" method="post">
+					<fieldset>
+						<div class="control-group">
+							<label class="control-label" for="username">用户名</label>
+							<div class="controls">
+								<input type="text" class="" name="reqParam.name" id="username">
+							</div>
+						</div>
+						<div class="control-group">
+							<label class="control-label" for="password">密码</label>
+							<div class="controls">
+								<input type="password" class="" name="reqParam.password"
+									id="password">
+							</div>
+						</div>
+					</fieldset>
+
+					<div class="remember-me fl">
+						<!-- <input type="checkbox" name="remember" class="remember"> -->
+						<!-- <label class="remember-label" for="remember">记住我</label> -->
+					</div>
+
+					<div class="fr">
+						<button type="button" onclick="return doLogin();"
+							class="btn btn-danger">登录</button>
+					</div>
+					<div class="clearfix"></div>
+				</form>
+			</div>
+			<div style="margin: 0 auto; margin-top: 16px; text-align: center;">
+				© 2012 <a href="#">Base Admin</a>.
+			</div>
+
+
+			<!-- <div class="alert_login">
+                    <p>没有账号？ <a href="javascript:;">注册</a></p>
+                    <p>忘记密码？ <a href="javascript:;">找回</a></p>
+                </div> -->
+		</div>
+	</div>
+	<!--main-->
+	<script>
+	$(document).keydown(function(event) {
+		if (event.keyCode == 13) { //绑定回车 
+			$('#loading').css('display', 'block');
+			doLogin();
+		}
+	});
+
+	function doLogin() {
+		if (jQuery('#username').val() == '' || jQuery('#password').val() == '') {
+			alert('用户名和密码不能为空！！');
+			return false;
+		}
+		jQuery.post("/user/login.action", {
+			'reqParam.name': jQuery('#username').val(),
+			'reqParam.password': jQuery('#password').val()
+		}, function(json) {
+			if (json.status != 0) {
+				alert("用户名或密码不正确！！");
+			} else {
+				window.location.href = '/project/listProject.action';
+			}
+		}, "json");
+
+		return false;
+	}
+		</script>
+	<!-- <div class="footer">
+            <div class="container">
+                © 2012 <a href="#">Base Admin</a>.
+            </div>
+        </div> -->
+</body>
+</html>
+

@@ -1,0 +1,211 @@
+#parse("/cc/constants.vm")
+#parse("/cc/header.vm")
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script>
+jQuery(function() {
+	var userId = jQuery( "#userId" ),
+    tips = jQuery( ".validateTips" );
+    
+    function updateTips( t ) {
+      tips
+        .text( t )
+        .addClass( "ui-state-highlight" );
+      setTimeout(function() {
+        tips.removeClass( "ui-state-highlight", 1500 );
+      }, 500 );
+    }
+    function checkNotEmpty( o, n ) {
+      if ( jQuery.trim(o.val()) == '' ) {
+        o.addClass( "ui-state-error" );
+        updateTips( n );
+        return false;
+      } else {
+        return true;
+      }
+    }
+    function checkRegexp( o, regexp, n ) {
+      if ( !( regexp.test( o.val() ) ) ) {
+        o.addClass( "ui-state-error" );
+        updateTips( n );
+        return false;
+      } else {
+        return true;
+      }
+    }
+	function checkRepeated( o, n ){
+		var _val = jQuery.trim(o.val());
+		var _flag = false;
+		jQuery('.user_id').each(function(){
+			if($(this).html()==_val){
+				_flag = true;
+			}
+		});		
+		if(_flag) {
+			o.addClass( "ui-state-error" );
+			updateTips( n );
+			return false;
+		} else {
+			return true;
+		}
+	}
+	jQuery( "#dialog-form" ).dialog({
+	      autoOpen: false,
+	      height: 300,
+	      width: 350,
+	      modal: true,
+	      buttons: {
+	        "提交": function() {
+	          var bValid = true;			  
+          	  userId.removeClass( "ui-state-error" );
+          	  bValid = bValid && checkNotEmpty( userId, "用户ID不能为空！" );
+          	  bValid = bValid && checkRegexp( userId, /^([0-9])+$/, "用户ID必须是数字！" );
+			  bValid = bValid && checkRepeated( userId, "用户ID重复！" );			  
+	          if ( bValid ) {
+	          	jQuery.post("/access/accessSetting.action", 
+		  			{ 'reqParam.userId': userId.val(),
+	                  'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)',
+		  			  'reqParam.projectId': "$!data.project.id", 
+		  			  'reqParam.operationType': 'add' },
+		  			function(json){
+		  				if(json.status!=0){
+			  				alert("服务器端异常请联系管理员！！");
+			  				window.location.href='/access/accessSettingList.action?reqParam.projectId=$data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+					  	}
+					},"json");
+				$('#tbd > tr:last-child')
+					.before('<tr id="o_' + userId.val() + '" class="items">'
+					+'<td class="user_id">' + userId.val() + '</td>'
+					+'<td></td>'
+					+'<td><a class="btn btn-primary fr" href="#" onclick=\'return delLine("' + userId.val() + '");\'>删除</a>'
+					+'</td>'
+					+'</tr>');
+				$( this ).dialog( "close" );
+	          }	          
+	        },
+	        "取消": function() {
+	          $( this ).dialog( "close" );
+	     	
+      	    }
+		  },
+	      close: function() {
+	         userId.val( "" ).removeClass( "ui-state-error" );
+			 updateTips( '' );
+			 tips.removeClass( "ui-state-highlight" );
+	      }
+	});    
+});
+</script>
+<style>
+    label, input { display:block; }
+    input.text { margin-bottom:12px; width:95%; padding: .4em; }
+    fieldset { padding:0; border:0; margin-top:25px; }
+    .ui-dialog .ui-state-error { padding: .3em; }
+    .validateTips { border: 1px solid transparent; padding: 0.3em; }
+</style>
+<div id="dialog-form" title="创建用户权限" style='display : none'>
+  <p class="validateTips"></p> 
+  <form>
+  <fieldset>
+    <label for="userId">用户ID</label>
+    <input type="text" name="userId" id="userId" class="text ui-widget-content ui-corner-all" maxlength="11">
+  </fieldset>
+  </form>
+</div>
+
+<div class="layout-content">
+    #parse("/cc/tree.vm")
+    <div class="right-tree pd0x10">
+        <div class="pd10x20">
+    <div class="page-title mb20"><i class="i_icon"></i> 设置权限 -- $!data.project.name</div>
+    
+    <div class="panel">
+	  <div class="panel-header">
+	    <div class="panel mt10 mb20">
+			<!-- content1 start -->	        
+			<script>
+			var lineCounter = 0;
+			</script>
+			<table id="users" class="table table_bordered">
+	          <thead>
+	            <tr>
+		            <th width="40%">用户id （userId）</th>
+		            <th width="40%"></th>
+		            <th></th>
+	            </tr>
+	          </thead>
+	          <tbody id="tbd">
+	          #foreach($item in $data.accessList)
+	            <tr id="o_$!item.userId" class="items">
+	                <td class="user_id">$!item.userId</td>
+	                <td></td>
+	                <td>
+	                   <a class="btn btn-primary fr" href="#" onclick="return delLine('$!item.userId');">删除</a>
+	                </td>
+	            </tr>
+	            <script>
+	            lineCounter = $velocityCount;
+	            </script>
+	            #end
+	            <tr>
+			        <td></td>
+			        <td></td>
+			        <td></td>
+			    </tr>
+	          </tbody>
+        	</table>
+	        #parse("/cc/paging.vm")
+	        <a class="btn btn-primary fr" href="#" onclick="return addLine();">添加一行</a>
+		<!-- content1 end -->
+	  </div>
+	</div>
+    
+	
+  </div>
+  <script>
+  function addLine() {
+        jQuery( "#dialog-form" ).dialog( "open" );
+		return false;
+  }
+  function delLine(id){		
+		var _currUserId = jQuery.cookie('rcc_uid');
+		if( jQuery.trim(id) == _currUserId ){
+			alert('当前UserID不能被删除！');
+			return false;
+		}
+  		jQuery.post("/access/accessSetting.action", 
+	  			{ 'reqParam.userId': id,
+                  'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)',
+	  			  'reqParam.projectId': "$!data.project.id", 
+	  			  'reqParam.operationType': 'del' },
+	  			function(json){
+	  				if(json.status!=0){
+		  				alert("服务器端异常请联系管理员！！");
+		  				window.location.href='/access/accessSettingList.action?reqParam.projectId=$data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+				  	}
+				},"json");
+  		$('#o_'+id).remove();
+  		return false;
+  }
+  function doSave(){
+  		var data = new Object();
+  		data['reqParam.projectId']= '$data.project.id';
+  		//data['reqParam.operationType']= 'save';
+  		data['authCheck']= '$sysUtils.encryptAuthCheck($request,$data.project.id)';
+  		 		
+		//for(var i=0;i<userIdList.length;i++){
+		//	data['reqParam.userIds['+i+']']=userIdList[i];
+		//}
+		jQuery.post("/access/accessSetting.action", 
+	  			data, 
+	  			function(json){
+	  				if(json.status!=0){
+		  				alert("服务器端异常请联系管理员！！");
+				  	}else{
+					  	window.location.href='/access/accessSettingList.action?reqParam.projectId=$data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+				  	}
+				},"json");
+  }
+  </script>
+    </div>
+</div>
+#parse("/cc/footer.vm")

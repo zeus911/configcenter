@@ -1,0 +1,49 @@
+    <iframe src="" id="deUser" name="deUser" style="display:none"></iframe>
+        <table class="table table_bordered">
+          <thead>
+            <TR>
+	          <TH width="20">ID</TH>
+	          <TH width="160">用户名称</TH>
+	          <TH width="100">创建时间</TH>
+	          <TH width="100">修改时间</TH>
+	          <TH width="100">状态</TH>
+	          <TH width="150">操作</TH>
+	        </TR>
+          </thead>
+          <tbody>
+          #foreach( $user in $data.list )
+           <tr>
+            <td>$user.id</td>
+            <td>$!utils.escapeInH($user.name)</td>
+            <td>$dateUtils.formatDate($!user.createTime,'yyyy-MM-dd HH:mm:ss')</td>
+            <td>$dateUtils.formatDate($!user.updateTime,'yyyy-MM-dd HH:mm:ss')</td>
+            <td>$user.status</td>
+            <td>
+				#if ( $user.id != 1 )
+                    <div class="controls controls-row">
+                    <a href="#" onclick="editU('$user.id', '$!utils.escapeInH($user.name)', '$user.password', '$user.apiPassword')"><i class="icon-edit mr5"></i>修改</a>
+                    <a href="#"  onclick="deleteId('$user.id', '$!utils.escapeInH($user.name)')"><i class="icon-trash mr5"></i>删除</a>
+                   <!-- <a href="/user/delUser.action?reqParam.id=$user.id" target="deUser" onclick="return confirm('确认删除\'${user.name}\'用户吗？');"><i class="icon-trash mr5"></i>删除</a> -->
+                   <!-- <a href="#" target="deUser" onclick="deleteId('$user.id')"><i class="icon-trash mr5"></i>删除</a> -->
+                    </div>
+				#end
+             </td>
+           </tr> 
+        #end
+            <tr>
+		        <td></td>
+		        <td></td>
+		        <td class="i-operate"></td>
+		        <td class="i-operate"></td>
+		        <td class="i-operate"></td>
+		    </tr>
+          </tbody>
+        </table>
+        <script type="text/javascript">
+          setTimeout(function () {
+            document.getElementById('deUser').onload = function () {
+               // location.href = '/project/listProject.action';
+            } 
+        }, 1000);
+        </script>
+      

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+    "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+    "http://struts.apache.org/dtds/struts-2.0.dtd">
+
+<struts>
+	<constant name="struts.enable.DynamicMethodInvocation" value="false" />
+	
+	<constant name="struts.convention.action.suffix" value="com.baidu.rigel"/>
+	<constant name="struts.convention.action.mapAllMatches" value="true"/>
+	<constant name="struts.convention.default.parent.package" value="rigel-default"/>
+	<constant name="struts.convention.result.path" value="/"/>
+	
+	<!-- close ognl expression cache
+	<constant name="struts.ognl.enableExpressionCache" value="false" />
+	<bean class="com.opensymphony.xwork2.ognl.OgnlUtil"  static="true"/>
+	 -->
+	
+    <package name="rigel-default" extends="struts-default">	
+    	<result-types>
+			<!-- customized result type add by yuyang begin-->
+			<result-type name="excel"   class="com.baidu.rigel.service.fileexport.view.ExcelResult"/>
+			<result-type name="xlsstream"   class="com.baidu.rigel.service.fileexport.view.XlsStreamResult"/>
+			<result-type name="outputstream"   class="com.baidu.rigel.service.fileexport.view.OutputStreamResult"/>
+			<result-type name="rawtext"   class="com.baidu.rigel.service.fileexport.view.RawTextResult"/>
+			<result-type name="freemarker-xml"   class="com.baidu.rigel.service.fileexport.view.XmlFreemarkerResult"/>
+			<result-type name="json" class="com.baidu.bjf.web.struts2.dispatcher.JSONResult"/>
+			<!-- customized result type add by yuyang end-->
+			<!-- add by yy -->
+			<result-type name="redirect" class="org.apache.struts2.dispatcher.ServletRedirectResult"/>
+			<result-type name="dispatcher" class="org.apache.struts2.dispatcher.ServletDispatcherResult" default="true"/>
+			
+			<result-type name="velocity" class="org.apache.struts2.dispatcher.VelocityResult"/>
+			
+		</result-types>
+	  <interceptors>
+		  <interceptor name="exceptionWrapperInterceptor"
+					class="com.baidu.bjf.web.struts2.interceptor.ExceptionWrapperInterceptor" />			  
+		  
+		  <interceptor name="jsonAwareParamstersInterceptor"
+                    class="com.baidu.bjf.web.struts2.interceptor.JsonAwareParametersInterceptor" /> 
+          <interceptor name="conversionErrorInterceptor"
+                    class="com.baidu.bjf.web.struts2.interceptor.ConversionErrorInterceptor" /> 
+         
+          <interceptor name="log"
+                    class="com.baidu.fishingnet.iceberg.web.CompositeLogActionInterceptor" /> 
+
+          <interceptor name="asyncRequest"
+                    class="com.baidu.lego.web.struts2.interceptor.AsyncRequestInterceptor" />   
+          		  
+		  <!-- QueryParameterInterceptor add by yuyang -->		
+		  <interceptor name="queryParameterInterceptor"  class="com.baidu.rigel.service.fileexport.interceptor.QueryParameterInterceptor"/>
+           <interceptor-stack name="baseStack">
+ 				<interceptor-ref name="createSession" />
+				<interceptor-ref name="exception"/>
+                <interceptor-ref name="alias"/>
+                <interceptor-ref name="servletConfig"/>
+                <interceptor-ref name="prepare"/>
+                <interceptor-ref name="i18n"/>
+                <interceptor-ref name="chain"/>
+                <interceptor-ref name="debugging"/>
+                <interceptor-ref name="modelDriven"/>
+                <interceptor-ref name="fileUpload"/>
+                <interceptor-ref name="asyncRequest"/>
+                <interceptor-ref name="staticParams"/>
+                <interceptor-ref name="jsonAwareParamstersInterceptor">
+                	<param name="excludeParams">__cas__st__,__cas__id__,.*[\\/\(\)#@'].*</param>
+                </interceptor-ref>
+                <interceptor-ref name="conversionErrorInterceptor"/>
+                <interceptor-ref name="validation">
+                	<param name="validateAnnotatedMethodOnly">true</param>
+                    <param name="excludeMethods">input,back,cancel,browse</param>
+                </interceptor-ref>
+                <interceptor-ref name="workflow">
+                    <param name="excludeMethods">input,back,cancel,browse</param>
+                </interceptor-ref>
+                <!-- 
+                <interceptor-ref name="userCenterHelperInterceptor" /> -->
+                <!-- QueryParameterInterceptor add by yuyang -->
+                <interceptor-ref name="queryParameterInterceptor"  />
+                 <interceptor-ref name="log"  >
+                 	<param name="outputClass">com.baidu.fishingnet.iceberg.CompositeLogOutput</param>
+                 </interceptor-ref>
+                 <interceptor-ref name="exceptionWrapperInterceptor"  />
+            </interceptor-stack>
+        </interceptors>
+        <default-interceptor-ref name="baseStack"/>
+        <!-- 全局result -->
+        <global-results>
+        	<result name="error" type="velocity">/error.vm</result>
+        	<result name="input" type="velocity">/input.vm</result>
+        	<result name="deptError" type="velocity">/deptError.vm</result>
+        </global-results>
+        
+        <!-- 全局异常映射 -->
+        <global-exception-mappings>
+        	<exception-mapping result="error" exception="com.baidu.rigel.service.usercenter.exception.UserCenterErrorException" />
+        	<exception-mapping result="deptError" exception="com.baidu.rigel.service.usercenter.exception.PositionErrorException" />
+        </global-exception-mappings>
+        
+    </package>
+    
+  
+</struts>

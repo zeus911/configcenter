@@ -1,0 +1,202 @@
+#parse("/cc/constants.vm")
+#parse("/cc/header.vm")
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<div class="layout-content">
+    #parse("/cc/tree.vm")
+    <div class="right-tree pd0x10">
+        <div class="pd10x20">
+    <div class="page-title mb20"><i class="i_icon"></i> $!utils.escapeInH(${data.project.name})环境列表<a href='#' id="addEnv" class="btn btn-primary fr">添加环境</a></div>
+    <div class="panel">
+      <div class="panel-header">
+      <div class="panel mt10 mb20">
+        <table class="table table_bordered">
+          <thead>
+            <tr>
+              <th width="90">环境ID</th>
+              <th>环境名称</th>
+              <th width="60">&nbsp;</th>
+              <th width="60">&nbsp;</th>
+              <th width="60" style="padding-left:15px;">&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody>
+          #foreach($env in $data.envList)
+        <tr>
+            <td>$env.id</td>
+            <td>$!utils.escapeInH($env.name)</td>
+            <td class="i-operate"><a href="#" onclick="editEnv('$env.id','$!utils.escapeInH($env.name)', '$sysUtils.encryptAuthCheck($request,$data.project.id)', '$env.memo')">编辑</a></td>
+            <td class="i-operate"><a href="#" onclick="return doDele('$env.id')">删除</a></td>
+            <td class="i-operate"><a href="/version/listVersion.action?reqParam.environmentId=$env.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)">管理版本</a></td>
+        </tr>
+        #end
+            <tr>
+            <td></td>
+            <td></td>
+            <td class="i-operate"></td>
+            <td class="i-operate"></td>
+            <td class="i-operate"></td>
+        </tr>
+          </tbody>
+        </table>
+        #parse("/cc/paging.vm")
+      </div>
+    </div>
+  </div>
+<!-- 添加环境dialog -->
+   <div id="dialog-confirm"  style="display: none">
+     <div class="pd10x20">
+  <div class="page-title mb20"><i class="i_icon"></i>  #if($data.env.id)编辑 #else 新增 #end 环境 (项目名称：$data.project.name )<span id='closeX'>X</span></div>
+        <div class="form pd10">
+        <form id="form0"  method="post" action="/env/saveEnv.action" >
+      <!-- <input type="hidden" name="reqParam.env.id" value="$!data.env.id"/> -->
+      <input type="hidden" name='authCheck' value="$sysUtils.encryptAuthCheck($request,$data.project.id)"/>
+      <input type="hidden" name="reqParam.env.projectId" value="$!data.project.id"/>
+            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td width="20%" align="right"><b class="requier">*</b>环境名称：</td>
+                    <td width="80%"  align="left"><input type="text" name="reqParam.env.name" value="$!utils.escapeInH($!data.env.name)" id="ename" class="input-large" size="50">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">简介：</td>
+                    <td align="left"><textarea id="ememo" name="reqParam.env.memo" value="$!utils.escapeInH($!data.env.memo)" class="textarea">$!data.env.memo</textarea></td>
+                </tr>          
+                <tr>
+                  <td align="right">&nbsp;</td>
+                  <td align="left"><a class="btn btn-primary btn-large" id="submitEnv">确认</a>  <a class="btn  btn-large" id="closeEnv">取消</a> </td>
+                  <!-- <td align="left"><a class="btn btn-primary btn-large" onclick="return doConfirm()">确认</a>  <a class="btn  btn-large" id="closeEnv">取消</a> </td> -->
+                </tr>
+              </table>
+              </form>
+         </div>
+    </div>
+    </div>
+  <script>
+  $(function() {
+   var closeModule = function() {
+       var wnd = $(window),
+         doc = $(document);
+       if (wnd.height() > doc.height()) { //当高度少于一屏
+         wHeight = wnd.height();
+       } else { //当高度大于一屏
+         wHeight = doc.height();
+       }
+       $("body").append("<div ID='MaskID'></div>");
+       $("body").find("#MaskID").width(wnd.width()).height(wHeight)
+         .css({
+           position: "absolute",
+           top: "0px",
+           left: "0px",
+           background: "#ccc",
+           filter: "Alpha(opacity=90);",
+           opacity: "0.5",
+           zIndex: "10"
+         });
+     }
+     //编辑环境
+   window.editEnv = function(id, name, jps, memo) {
+     $('#ename').val(name);
+     $('#ememo').val(memo);
+     closeModule();
+     $("#dialog-confirm").dialog({
+       autoOpen: true,
+       module: true,
+       height: 500,
+       width: 700,
+       overlay: {
+         opacity: 0.5,
+         background: "black",
+         overflow: 'auto'
+       },
+     });
+     $('.ui-helper-clearfix').css('display', 'none');
+     $('#closeX').click(function() {
+       $('#dialog-confirm').dialog('close');
+       $('#MaskID').remove();
+     });
+     $('#closeEnv').click(function() {
+       $('#dialog-confirm').dialog('close');
+       $('#MaskID').remove();
+     });
+     $('#submitEnv').click(function(){
+         if($('#ename').val() == ''){
+          alert('请填写环境名称');
+        }else{
+          var parms = $('#form0').serialize();
+          jQuery.ajax({
+            url: '/env/saveEnv.action?authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)&reqParam.env.id=' +id,
+            data: parms,
+            type: 'post',
+            success: function(data){
+              window.location.href = '/env/listEnv.action?reqParam.projectId=$!data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+            }
+          })
+        }
+     })
+   }
+   //添加环境
+   $('#addEnv').click(function() {
+     closeModule();
+     $("#dialog-confirm").dialog({
+       autoOpen: true,
+       module: true,
+       height: 500,
+       width: 700,
+       overlay: {
+         opacity: 0.5,
+         background: "black",
+         overflow: 'auto'
+       },
+     });
+     $('#ename').val('');
+     $('#ememo').val('');
+     $('.ui-helper-clearfix').css('display', 'none');
+     $('#closeX').click(function() {
+       $('#dialog-confirm').dialog('close');
+       $('#MaskID').remove();
+     });
+     $('#closeEnv').click(function() {
+       $('#dialog-confirm').dialog('close');
+       $('#MaskID').remove();
+     });
+      $('#submitEnv').click(function(){
+        if($('#ename').val() == ''){
+          alert('请填写环境名称');
+        }else{
+          var parms = $('#form0').serialize();
+          jQuery.ajax({
+            url: '/env/saveEnv.action?authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)',
+            data: parms,
+            type: 'post',
+            success: function(data){
+              $('#dialog-confirm').dialog('close');
+              $('#MaskID').remove();
+              window.location.href = '/env/listEnv.action?reqParam.projectId=$!data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+            }
+          })
+        }
+   })
+   });
+ });
+
+ function doDele(id) {
+   if (confirm('确认删除？')) {
+     jQuery.getJSON("/env/delEnv.action", {
+         'reqParam.environmentId': id,
+         'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)'
+       },
+       function(json) {
+         if (json.status != 0) {
+           alert("服务器端异常请联系管理员！！");
+         } else {
+           window.location.href = '/env/listEnv.action?reqParam.projectId=$data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)';
+         }
+       });
+   }
+   return false;
+ }
+  </script>
+    </div>
+</div>
+#parse("/cc/footer.vm")
+</div>

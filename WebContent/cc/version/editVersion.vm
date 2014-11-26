@@ -1,0 +1,74 @@
+#parse("/cc/constants.vm")
+#parse("/cc/header.vm")
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script>
+  jQuery(function() {
+    jQuery( "#vcsumd" ).datepicker();
+  });
+  </script>
+  <div class="layout-content">
+  #parse("/cc/tree.vm")
+    <div class="right-tree pd0x10">
+        <div class="pd10x20">
+	<div class="page-title mb20"><i class="i_icon"></i>  #if(!$data.version.id) 新增 #else 编辑 #end 版本(工程：$!utils.escapeInH($data.project.name)  环境：$!utils.escapeInH($data.env.name)) </div>
+        <div class="form pd10">
+        <form id="form0" method="post" action="/version/saveVersion.action" >
+	    <input type="hidden" name="reqParam.version.id" value="$!data.version.id"/>
+	    <input type="hidden" name="reqParam.version.projectId" value="$!data.project.id"/>
+	    <input type="hidden" name="reqParam.version.environmentId" value="$!data.env.id"/>
+        <input type="hidden" id="vcsum" name="reqParam.version.checkSum" value="$!data.version.checkSum" class="input-large" size="50" readonly="true">
+        <input type="hidden" id="vccsum" name="reqParam.version.createChckSum" value="$!data.version.createChckSum" class="input-large" size="50" readonly="true">
+        <input type="hidden" id="vcsumd" name="reqParam.version.checkSumDate" value="$!dateUtils.formatDate($!data.version.checkSumDate,"yyyy-MM-dd HH:mm:ss")" class="input-large" size="50" readonly="true">
+            <table border="0" cellspacing="0" cellpadding="0" width="100%">
+                <tr>
+                    <td width="20%" align="right"><b class="requier">*</b>名称：</td>
+                    <td width="80%"  align="left"><input id="vname" type="text" name="reqParam.version.name" value="$!utils.escapeInH($!data.version.name)" class="input-large" size="50">
+                    </td>
+                </tr>
+                <tr>
+                    <td align="right">简介：</td>
+                    <td align="left"><textarea id="vmemo" name="reqParam.version.memo" class="textarea">$!utils.escapeInH($!data.version.memo)</textarea></td>
+                </tr>
+                <tr>
+                  <td align="right">&nbsp;</td>
+                  <td align="left"><a class="btn btn-primary btn-large" onclick="return doConfirm();">确认</a>  <a class="btn  btn-large">取消</a> </td>
+                </tr>
+              </table>
+              </form>
+         </div>
+    </div>
+    </div>    
+</div>
+  <script>
+  function doConfirm(){
+  		if(jQuery.trim(jQuery('#vname').val())==''){
+  			alert('请填写名称！');
+  			return false;
+  		}
+	  jQuery.post("/version/saveVersion.action", 
+	  			{ 'reqParam.version.id': "$!data.version.id",
+                  'authCheck': '$sysUtils.encryptAuthCheck($request,$data.project.id)',
+	  			  'reqParam.version.projectId': "$!data.project.id", 
+	  			  'reqParam.version.environmentId': "$!data.env.id", 
+	  			  'reqParam.version.name': jQuery('#vname').val(), 
+	  			  'reqParam.version.memo': jQuery('#vmemo').val(), 
+	  			  'reqParam.version.checkSum': jQuery('#vcsum').val(), 
+	  			  'reqParam.version.createChckSum': jQuery('#vccsum').val(), 
+	  			  'reqParam.version.checkSumDate': jQuery('#vcsumd').val() }, 
+	  			function(json){
+	  				if(json.status!=0){
+                        var errorMsg = "";
+                        jQuery.each(json.statusInfo.error,function(key,val){
+                            errorMsg = errorMsg + "" + key + ":" + val + "\n";
+                        });
+                        alert(errorMsg);
+
+                    }else{
+					  	window.location.href='/version/listVersion.action?reqParam.environmentId=$!data.env.id&reqParam.projectId=$!data.project.id&authCheck=$sysUtils.encryptAuthCheck($request,$data.project.id)&nid=$!request.getParameter('nid')';
+				  	}
+				},"json");
+		return false;
+	}
+  </script>
+</div>
+#parse("/cc/footer.vm")
